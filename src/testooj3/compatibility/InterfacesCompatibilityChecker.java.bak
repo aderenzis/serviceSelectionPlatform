@@ -1,0 +1,2979 @@
+package testooj3.compatibility;
+
+import java.io.File;
+
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
+
+
+import testooj3.auxiliares.Auxi;
+import testooj3.auxiliares.Copiar;
+import testooj3.auxiliares.SemanticInterfaceCompatibility;
+import testooj3.compatibility.wrappers.WMethod;
+import testooj3.compatibility.wrappers.Wrapper;
+import testooj3.compatibility.wsclient.Wsdl;
+import testooj3.domain.Configuration;
+import testooj3.domain.TClass;
+import testooj3.domain.TMethod;
+import testooj3.domain.TParameter;
+import testooj3.domain.TestoojClassLoader;
+import testooj3.gui.compatibility.JFBuildWrappers;
+import testooj3.gui.compatibility.JFCompatibility;
+import testooj3.gui.compatibility.NonEditableDefaultTableModel;
+import testooj3.persistence.Agente;
+
+
+/** 
+ * @author andres
+ */
+public class InterfacesCompatibilityChecker implements Runnable {
+	protected final int NO_COMPATIBLE = 0;
+	protected String summary = "";  //  @jve:decl-index=0:
+	protected String summaryList = "";  //  @jve:decl-index=0:
+	TClass a; //original class
+	TClass b; //candidate class
+	protected JFBuildWrappers jfBuildWindows;
+	protected JFCompatibility parentWindow;
+	protected Hashtable<String, Vector> compatibilities;  //  @jve:decl-index=0:
+	private Hashtable<MaximalInterfaceCompatibility, Vector<ParameterCompatibilityPair>> parameterMatching;//recomendacion unica de alan
+	private Hashtable<MaximalInterfaceCompatibility, Vector<Vector<int[]>>> parameterMatchingRecomendations;//conjunto de recomendaciones diego
+	protected String classPathOriginal;
+	protected String classPathCandidate;
+	protected int cantidadWrappers;
+	protected Arbol t;  //  @jve:decl-index=0:
+	
+
+
+
+
+
+	public InterfacesCompatibilityChecker(JFCompatibility parentWindow,
+			String originalClassName, String candidateClassName,
+			boolean considerInheritedOperations, String classPathOriginal,
+			String classPathCandidate) throws Exception {
+		
+	
+
+
+
+
+
+
+
+
+
+
+		
+		this.parameterMatching= new Hashtable();
+		this.parameterMatchingRecomendations= new Hashtable();
+		this.parentWindow = parentWindow;
+		a = TestoojClassLoader.load(originalClassName, classPathOriginal,
+				considerInheritedOperations);
+		b = TestoojClassLoader.load(candidateClassName, classPathCandidate,
+				considerInheritedOperations);
+		this.classPathOriginal = classPathOriginal;
+		this.classPathCandidate = classPathCandidate;
+		this.parentWindow.setNumberOfIterations(a.getMethods().size());
+	}
+
+	public void run() {
+		try {
+			calculateCompatibilities();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		this.parentWindow.log(this.getSummary());
+	}
+	
+	
+
+	protected void calculateCompatibilities() throws IOException {
+		Vector methods = a.getMethods();	
+		this.compatibilities = new Hashtable<String, Vector>();
+		for (int i = 0; i < methods.size(); i++) {
+			this.parentWindow.setCurrentIteration((i + 1));
+			TMethod method = (TMethod) methods.get(i);
+			this.compatibilities.put(method.getWholeSignature(), new Vector());
+			
+			loadCompatibleMethods(i, a, method, b);
+		}
+		/*//System.out.println("INICIO - HASTABLES");
+		MuestraElementosHash(this.compatibilities);
+		//System.out.println("FIN - HASTABLES");*/	
+		buildSummary();
+		// buildSummaryList();
+		// buildSummaryTable();
+	}
+
+	protected void buildSummaryTable() {
+		Vector headers = new Vector();
+		headers.add("");
+		for (int i = 0; i < this.b.getMethods().size(); i++)
+			headers.add(this.b.getMethod(i).getWholeSignature());
+		Vector rows = new Vector();
+		for (int i = 0; i < this.a.getMethods().size(); i++) {
+			Vector row = new Vector();
+			for (int j = 0; j < headers.size(); j++)
+				row.add("");
+			row.setElementAt(this.a.getMethod(i).getWholeSignature(), 0);
+			rows.add(row);
+		}
+		for (int i = 0; i < this.a.getMethods().size(); i++) {
+			// String aMethod=a.getMethod(i).getWholeSignature();
+			TMethod aMethod = a.getMethod(i);
+			Vector compatibilityRow = (Vector) this.compatibilities.get(aMethod
+					.getWholeSignature());
+			for (int j = 0; j < compatibilityRow.size(); j++) {
+				String bMethod = compatibilityRow.get(j).toString();
+				Vector row = (Vector) rows.get(i);
+				for (int k = 0; k < headers.size(); k++) {
+					String auxi = headers.get(k).toString();
+					if (auxi.equals(bMethod)) {
+						row.setElementAt("+", k);
+						k = headers.size();
+					}
+				}
+			}
+		}
+		NonEditableDefaultTableModel tableModel = new NonEditableDefaultTableModel(
+				rows, headers);
+		this.parentWindow.setEquivalenceTable(tableModel);
+	}
+
+	protected void buildSummary() {
+		Enumeration vectores = this.compatibilities.elements();
+		int max = 0;
+		while (vectores.hasMoreElements()) {
+			Vector v = (Vector) vectores.nextElement();
+			if (v.size() > max)
+				max = v.size();
+		}
+
+		Enumeration<String> keys = this.compatibilities.keys();
+		StringBuffer sb = new StringBuffer("<table border=1 FONTSIZE='3'>");
+		sb.append("<tr><th><FONT SIZE='3'>");
+		sb.append(a.getName());
+		sb.append("</FONT></th>");
+		sb.append("<th colspan=");
+		sb.append(max);
+		sb.append("><FONT SIZE='3'>");
+		sb.append(b.getName());
+		sb.append("</FONT></th></tr>");
+		while (keys.hasMoreElements()) {
+			String methodSignature = keys.nextElement();
+			Vector compatibles = (Vector) compatibilities.get(methodSignature);
+			// Forma 1era celda de fila - el metodo original de a
+			if (!compatibles.isEmpty())
+				sb.append("<tr><td bgcolor=\"#F0F8FF\"><FONT SIZE='3'>"); // Hay
+																			// compatibles
+																			// ->
+																			// celeste
+			else
+				sb.append("<tr><td bgcolor=\"#FF6347\"><FONT SIZE='3'>");// No
+																			// Hay
+																			// compatibles
+																			// ->
+																			// rojo
+			sb.append(methodSignature);
+			sb.append("</FONT></td>");
+
+			// Forma el resto de la fila - los compatibles de b
+			for (int i = 0; i < compatibles.size(); i++) {
+				Vector compToPrint = (Vector) ((Vector) compatibles.get(i))
+						.clone();
+				TMethod bMethod = (TMethod) compToPrint.get(2);
+				compToPrint.remove(2);
+				compToPrint.add(2, bMethod.getWholeSignature());
+				System.out.println("OO  "+compToPrint.get(0));
+				if (compToPrint.get(0).equals(1)) // si es "exact" Nro caso 1
+					sb.append("<td bgcolor=\"#F0F8FF\"><FONT SIZE='3'>");// Hay
+																			// iguales
+																			// ->
+																			// celeste
+				else
+					sb.append("<td><FONT SIZE='3'>");// El resto -> blanco
+				sb.append(compToPrint.toString());
+				sb.append("</FONT></td>");
+			}
+			sb.append("<td>");
+						
+			for (int i = 0; i < max - compatibles.size(); i++)
+				sb.append("<td></td>");
+			
+			
+			//Matching parametros
+			sb.append("<td>");
+			String match = "";
+			Vector v = parameterMatching.get(new MaximalInterfaceCompatibility(methodSignature, ""));
+			if(v!=null && v.size()>0)
+				sb.append(v.toString());
+			sb.append("</td>");
+			//fin Matching parametros
+			sb.append("</tr>");
+		}
+		sb.append("</table>");
+		summary = sb.toString();
+	}
+
+	protected void buildSummaryList() { // lo estoy haciendo yo Andres.. para
+										// mostrar un resumen
+		Enumeration vectores = this.compatibilities.elements();
+		int max = 0;
+		while (vectores.hasMoreElements()) {
+			Vector v = (Vector) vectores.nextElement();
+			if (v.size() > max)
+				max = v.size();
+		}
+
+		Enumeration<String> keys = this.compatibilities.keys();
+		StringBuffer sb = new StringBuffer("<table border=0 FONTSIZE='3'>");
+		sb.append("<tr><th><FONT SIZE='3'>");
+		sb.append(a.getName());
+		sb.append("</FONT></th>");
+		sb.append("<th colspan= '3'>");
+		sb.append("<FONT SIZE='3'>");
+		sb.append(b.getName());
+		sb.append("</FONT></th></tr>");
+		while (keys.hasMoreElements()) {
+			String signature = keys.nextElement().toString();
+			Vector compatibles = (Vector) compatibilities.get(signature);
+			
+			sb.append("<tr><td><FONT SIZE='3'>");
+			sb.append(signature);
+			sb.append("</FONT></td>");
+			if (compatibles.firstElement().equals(signature)) { // OJO QUE HAY
+																// ERROR !!!!!
+				sb.append("<td><FONT SIZE='3'>");
+				sb.append("Yes");
+				sb.append("</FONT></td>"); // Hay 1 igual
+				sb.append("<td><FONT SIZE='3'>");
+				sb.append(compatibles.size() - 1);
+				sb.append("</FONT></td>"); // El resto
+				sb.append("<td><FONT SIZE='3'>");
+				sb.append(compatibles.size());
+				sb.append("</FONT></td>"); // Total
+			} else {
+				sb.append("<td><FONT SIZE='3'>");
+				sb.append("No");
+				sb.append("</FONT></td>"); // No hay 1 igual
+				sb.append("<td><FONT SIZE='3'>");
+				sb.append(compatibles.size());
+				sb.append("</FONT></td>"); // Hay 1 igual
+				sb.append("<td><FONT SIZE='3'>");
+				sb.append(compatibles.size());
+				sb.append("</FONT></td>"); // Total
+			}
+			int i = 0;
+			for (; i < max; i++)
+				sb.append("<td></td>");
+			
+			sb.append("</tr>");
+			
+		}
+		sb.append("</table>");
+		summaryList = sb.toString();
+	}
+
+	private void loadCompatibleMethods(int c1MethodIndex, TClass c1,TMethod c1Method, TClass c2) throws IOException 
+	{
+		Vector compatibles = (Vector) compatibilities.get(c1Method.getWholeSignature());
+		int minValue = 999;
+		
+		double minAdaptabilityGap = 8;	
+		Double maxSim = 0.0;
+		
+		MaximalInterfaceCompatibility maximalInterfaceCompatibility = null;
+		Vector<ParameterCompatibilityPair> vecParamCompatibilityPair = null;
+		Vector<Vector<int[]>> recomendations = null;
+
+		for (int i = 0; i < c2.getMethods().size(); i++) {
+			int paramCase = 4; // no compatible
+			int nameCase = 4; // distinct names
+			int returnCase = 4; // no compatible
+			int excepCase = 3; // no compatible
+			double adaptabilityGap = 8;
+
+			double parameterResult = 0;
+			
+			TMethod c2Method = c2.getMethod(i);
+			
+				// Evaluar Parametros
+				
+				if (c1Method.getParametros().size()<= c2Method.getParametros().size() &&
+					c1Method.getParametros().size() >= ((c2Method.getParametros().size())/2)) {
+					
+					if(c1Method.getParametros().size()!=0)
+					{
+						recomendations =new Vector<Vector<int[]>>();//tendra el cjto de recomendaciones
+						parameterResult = SemanticInterfaceCompatibility.paramCaseValue(c1Method,c1,c2Method,c2,recomendations);
+						
+						
+						if(parameterResult >= 1.5)
+							paramCase =1;
+						else if(0.5 <= parameterResult && parameterResult < 1.5)
+							paramCase=2;
+						else if(0.2<=parameterResult && parameterResult < 0.5)
+							paramCase =3;
+						else
+							paramCase= 4; //No hay incompatibilidad (como mínimo es 4)
+							
+						adaptabilityGap -= parameterResult;
+					}
+					else if(c2Method.getParametros().size()==0){
+						
+						adaptabilityGap = -2;
+						paramCase = 1; //No tiene parametros
+					}							
+						else
+							paramCase=0; //En este caso es incompatible porque c1Method tiene parámetros y c2Method no.
+							
+										
+					if (paramCase != 0) { // Si param distinto NoCompatible =>
+											// sigue
+						// Evaluar Tipo de Resultado
+						double returnRes = 0;
+						if (c1Method.getTipo().equals(c2Method.getTipo())){
+							returnCase = 1; // condicion R1
+							returnRes = 2;
+						}
+						
+						else if (isSubTyping(c1Method.getTipo(), c2Method.getTipo())){
+							returnCase = 2; // condicion R2
+							returnRes = 1;
+						}
+						else {
+							double complexReturnTypeResult = isSubTypeReturn (c1Method,c2Method); //evaluamos si es complejo
+							System.out.println("ComplexReturn: " + complexReturnTypeResult);
+							if(1.5 <= complexReturnTypeResult)
+								returnCase =1;
+							else if(1 <= complexReturnTypeResult && complexReturnTypeResult < 1.5)
+								returnCase=2;
+							else if(0.6 <= complexReturnTypeResult && complexReturnTypeResult < 1)
+								returnCase =3;
+							else
+								returnCase= 4;
+							returnRes = complexReturnTypeResult * 1.33;
+						}
+						
+		
+						adaptabilityGap -= returnRes;
+						if (returnCase != 0) { // Si returnType distinto
+												// NoCompatible => sigue
+							
+							
+							
+							// Evaluar Excepciones
+							if (c1Method.getLaunchedExceptions().equals(
+									c2Method.getLaunchedExceptions()))
+								excepCase = 1; // condicion Ec1: E1 /\ E2
+							else if (c1Method.getLaunchedExceptions().size() == c2Method
+									.getLaunchedExceptions().size()) {
+								if (isCompatibleExceptions(c1Method, c2Method))
+									excepCase = 2;
+								else if (isExistsException(c1Method, c2Method))
+									excepCase = 3;
+							}
+							excepCase = 1; //Se asigna excepCase = 1 para que siga comparando (excepciones no consideradas por ahora)
+							adaptabilityGap -= 2;
+							
+							if (excepCase != 0) { // Si Excepciones distinto
+													// NoCompatible => sigue
+								// Evaluar Nombre de Metodo
+								////System.out.println("Se compara semanticamente: "+ c1Method.getNombre()+ " "+ c2Method.getNombre());
+								int[] semanticRes = {0,0,0,0};
+								Vector<Vector> termVec = new Vector();
+								try{
+					    			semanticRes= SemanticInterfaceCompatibility.assessNameCompatibility(c1Method.getNombre(),c2Method.getNombre(),termVec);
+					    			
+				    			}
+				    			catch(Exception e)
+				    			{
+				    				e.printStackTrace();
+				    			}
+				    			Double nameResult =SemanticInterfaceCompatibility.compatibleValue(semanticRes, termVec.get(0), termVec.get(1));
+				    			if(nameResult>=1)
+				    				nameCase = 1;
+								else if (nameResult>=0.5 )
+									nameCase = 2; // condicion N2
+								else if(nameResult >= 0.2)
+									nameCase=3;
+								else
+									nameCase=4; // Se asigna como mínimo N4 para que no se generen incompatibilidades
+									
+								adaptabilityGap -= 2*nameResult;	
+							}
+						}
+					}
+				}
+			Vector level = getLevelCompatibilidad(returnCase, nameCase,
+					paramCase, excepCase);
+			// Establece el nivel de compatibilidad de Interfaces (syntactica) alcanzado
+			Integer nroLevel = (Integer) level.get(0);
+			
+			if (minAdaptabilityGap != 8){
+				
+				
+					if( (adaptabilityGap < minAdaptabilityGap) && c1Method.getParametros().size()>0 && c2Method.getParametros().size()>0)
+					{
+						maximalInterfaceCompatibility = new MaximalInterfaceCompatibility(c1Method.getWholeSignature(), c2Method.getWholeSignature());
+						vecParamCompatibilityPair = createParamCompatibilityPair(c1Method.getParametros(), c2Method.getParametros(),recomendations);
+						
+						
+						minAdaptabilityGap = adaptabilityGap;
+					}
+				
+				compatibles = addCompatibleMethod(compatibles, c2Method, level, minAdaptabilityGap);
+			}
+			else if (adaptabilityGap != 8){ 
+					//Este es el 1ero compatible que se encuentra
+					
+				if (c1Method.getParametros().size()>0 && c2Method.getParametros().size()>0){
+					maximalInterfaceCompatibility = new MaximalInterfaceCompatibility(c1Method.getWholeSignature(), c2Method.getWholeSignature());
+					vecParamCompatibilityPair = createParamCompatibilityPair(c1Method.getParametros(), c2Method.getParametros(),recomendations);
+					minValue=nameCase+paramCase+excepCase+returnCase;
+				}
+				
+				minAdaptabilityGap = adaptabilityGap;
+					
+				compatibles = addCompatibleMethod(compatibles, c2Method, level, minAdaptabilityGap);	
+			}
+			
+		}
+	
+	
+	
+		
+		//compatibles = getSortedVector(compatibles, 108);
+		if(maximalInterfaceCompatibility!=null && vecParamCompatibilityPair!=null) {
+			parameterMatching.put(maximalInterfaceCompatibility,vecParamCompatibilityPair);
+			/* 
+			 * aca tengo todas las recomendaciones para esa sola operacion en cuestion.
+			 * es el resultado que ira como valor del par clave (interfaceOriginal(),interfaceService())
+			 * de el nuevo hash para mantener todas las recomendaciones...
+			 */
+			
+			this.parameterMatchingRecomendations.put(maximalInterfaceCompatibility, recomendations);
+		}
+		compatibles = getSortedVector(compatibles, 137);
+		compatibilities.put(c1Method.getWholeSignature(), compatibles);
+		Vector<ParameterCompatibilityPair> vec = this.parameterMatching.get(new MaximalInterfaceCompatibility(c1Method.getWholeSignature(),""));
+		
+	}
+	
+	private Vector<ParameterCompatibilityPair> createParamCompatibilityPair(Vector<TParameter> c1MethodParameters , Vector<TParameter> c2MethodParameters, Vector<Vector<int[]>> vecResultParam) {
+		
+		Vector<ParameterCompatibilityPair> ret= new Vector();
+		System.out.println(" **** "+vecResultParam.size());
+		ParameterCompatibilityPair aux;
+		Vector<int[]> resultParam = vecResultParam.get(0);
+		if(resultParam!=null)
+			for(int i=0; i<resultParam.size(); i++)
+			{
+				aux= new ParameterCompatibilityPair(c1MethodParameters.get(resultParam.get(i)[0]).getMNombre(), c1MethodParameters.get(resultParam.get(i)[0]).getTipo(), c2MethodParameters.get(resultParam.get(i)[1]).getMNombre(),c2MethodParameters.get(resultParam.get(i)[1]).getTipo());
+				ret.add(aux);
+			}
+		return ret;
+	}
+
+	private String nombresYTiposDeParametros(TMethod c1Method) {
+		
+		String ret="";
+		Vector<TParameter> parameters = c1Method.getParametros();
+		for(TParameter parameter: parameters)
+		{
+			if(ret.length()>0)
+				ret = ret +"-"+parameter.getMNombre()+":"+parameter.getTipo();
+			else 
+				ret=parameter.getMNombre()+":"+parameter.getTipo();
+		} 
+		if (ret.equals(""))
+			ret="SIN PARAMETROS";
+		return ret;
+	}
+
+	
+	
+
+	private Vector getLevelCompatibilidad(int returnCase, int nameCase,
+			int paramCase, int excepCase) {
+		// Idenfica el caso de compatibilidad
+		Vector level = new Vector();
+		if (paramCase != 0 && returnCase != 0 && excepCase != 0 && nameCase !=0) {
+			String rCase = "R" + returnCase;
+			String nCase = "N" + nameCase;
+			String pCase = "P" + paramCase;
+			String eCase = "E" + excepCase; 
+			level.add(rCase);
+			level.add(nCase);
+			level.add(pCase);
+			level.add(eCase);
+
+			// 54 Casos nuevos y automáticos, chequeados. R puede ser 1 ó 2. N,
+			// P, E pueden ser 1,2 ó 3.
+
+			if (returnCase == 1 && nameCase == 1 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 1); // "exact" - Caso 1
+				level.add(1, "exact");
+				return level;
+			}
+
+			// --[ N_Exact
+			// ]-----------------------------------------------------------------------
+
+			if (returnCase == 1 && nameCase == 1 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 2); // "n_exact_1" - Caso 2
+				level.add(1, "n_exact_1");
+				return level;
+			}
+			
+			if (returnCase == 3 && nameCase == 1 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 15); // "n_exact_14" - Caso 15
+				level.add(1, "n_exact_14");
+				return level;
+			}
+			
+			if (returnCase == 1 && nameCase == 2 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 3); // "n_exact_2" - Caso 3
+				level.add(1, "n_exact_2");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 4); // "n_exact_3" - Caso 4
+				level.add(1, "n_exact_3");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 5); // "n_exact_4" - Caso 5
+				level.add(1, "n_exact_4");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 6); // "n_exact_5" - Caso 6
+				level.add(1, "n_exact_5");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 7); // "n_exact_6" - Caso 7
+				level.add(1, "n_exact_6");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 8); // "n_exact_7" - Caso 8
+				level.add(1, "n_exact_7");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 9); // "n_exact_8" - Caso 9
+				level.add(1, "n_exact_8");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 10); // "n_exact_9" - Caso 10
+				level.add(1, "n_exact_9");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 11); // "n_exact_10" - Caso 11
+				level.add(1, "n_exact_10");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 12); // "n_exact_11" - Caso 12
+				level.add(1, "n_exact_11");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 13); // "n_exact_12" - Caso 13
+				level.add(1, "n_exact_12");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 14); // "n_exact_13" - Caso 14
+				level.add(1, "n_exact_13");
+				return level;
+			}
+
+			// --[ Soft
+			// ]--------------------------------------------------------------------------
+
+			if (returnCase == 1 && nameCase == 2 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 16); // "soft_1" - Caso 16
+				level.add(1, "soft_1");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 17); // "soft_2" - Caso 17
+				level.add(1, "soft_2");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 18); // "soft_3" - Caso 18
+				level.add(1, "soft_3");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 19); // "soft_4" - Caso 19
+				level.add(1, "soft_4");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 20); // "soft_5" - Caso 20
+				level.add(1, "soft_5");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 21); // "soft_6" - Caso 21
+				level.add(1, "soft_6");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 22); // "soft_7" - Caso 22
+				level.add(1, "soft_7");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 24); // "soft_9" - Caso 24
+				level.add(1, "soft_9");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 25); // "soft_10" - Caso 25
+				level.add(1, "soft_10");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 26); // "soft_11" - Caso 26
+				level.add(1, "soft_11");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 27); // "soft_12" - Caso 27
+				level.add(1, "soft_12");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 28); // "soft_13" - Caso 28
+				level.add(1, "soft_13");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 29); // "soft_14" - Caso 29
+				level.add(1, "soft_14");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 33); // "soft_18" - Caso 33
+				level.add(1, "soft_18");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 34); // "soft_19" - Caso 34
+				level.add(1, "soft_19");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 35); // "soft_20" - Caso 35
+				level.add(1, "soft_20");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 36); // "soft_21" - Caso 36
+				level.add(1, "soft_21");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 37); // "soft_22" - Caso 37
+				level.add(1, "soft_22");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 38); // "soft_23" - Caso 38
+				level.add(1, "soft_23");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 41); // "soft_26" - Caso 41
+				level.add(1, "soft_26");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 42); // "soft_27" - Caso 42
+				level.add(1, "soft_27");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 43); // "soft_28" - Caso 43
+				level.add(1, "soft_28");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 44); // "soft_29" - Caso 44
+				level.add(1, "soft_29");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 45); // "soft_30" - Caso 45
+				level.add(1, "soft_30");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 46); // "soft_31" - Caso 46
+				level.add(1, "soft_31");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 47); // "soft_32" - Caso 47
+				level.add(1, "soft_32");
+				return level;
+			}
+
+			// --[ N_Soft
+			// ]------------------------------------------------------------------------
+
+			if (returnCase == 1 && nameCase == 3 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 55); // "n_soft_1" - Caso 55
+				level.add(1, "n_soft_1");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 56); // "n_soft_2" - Caso 56
+				level.add(1, "n_soft_2");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 57); // "n_soft_3" - Caso 57
+				level.add(1, "n_soft_3");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 61); // "n_soft_7" - Caso 61
+				level.add(1, "n_soft_7");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 62); // "n_soft_8" - Caso 62
+				level.add(1, "n_soft_8");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 63); // "n_soft_9" - Caso 63
+				level.add(1, "n_soft_9");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 64); // "n_soft_10" - Caso 64
+				level.add(1, "n_soft_10");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 65); // "n_soft_11" - Caso 65
+				level.add(1, "n_soft_11");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 66); // "n_soft_12" - Caso 66
+				level.add(1, "n_soft_12");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 77); // "n_soft_23" - Caso 77
+				level.add(1, "n_soft_23");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 80); // "n_soft_26" - Caso 80
+				level.add(1, "n_soft_26");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 81); // "n_soft_27" - Caso 81
+				level.add(1, "n_soft_27");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 82); // "n_soft_28" - Caso 82
+				level.add(1, "n_soft_28");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 95); // "n_soft_41" - Caso 95
+				level.add(1, "n_soft_41");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 23); // "soft_8" - Caso 23
+				level.add(1, "soft_8");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 30); // "soft_15" - Caso 30
+				level.add(1, "soft_15");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 31); // "soft_16" - Caso 31
+				level.add(1, "soft_16");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 32); // "soft_17" - Caso 32
+				level.add(1, "soft_17");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 39); // "soft_24" - Caso 39
+				level.add(1, "soft_24");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 40); // "Soft_25" - Caso 40
+				level.add(1, "soft_25");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 48); // "Soft_33" - Caso 48
+				level.add(1, "soft_33");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 49); // "soft_34" - Caso 49
+				level.add(1, "soft_34");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 50); // "soft_35" - Caso 50
+				level.add(1, "soft_35");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 51); // "soft_36" - Caso 51
+				level.add(1, "soft_36");
+				return level;
+			}
+			if (returnCase ==3 && nameCase == 1 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 52); // "soft_37" - Caso 52
+				level.add(1, "soft_37");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 53); // "soft_38" - Caso 53
+				level.add(1, "soft_38");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 54); // "soft_39" - Caso 54
+				level.add(1, "soft_39");
+				return level;
+			}
+
+
+			// --[ N_Soft
+			// ]------------------------------------------------------------------------
+			
+			if (returnCase == 1 && nameCase == 1 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 58); // "n_soft_4" - Caso 58
+				level.add(1, "n_soft_4");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 59); // "n_soft_5" - Caso 59
+				level.add(1, "n_soft_5");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 60); // "n_soft_6" - Caso 60
+				level.add(1, "n_soft_6");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 67); // "n_soft_13" - Caso 67
+				level.add(1, "n_soft_13");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 68); // "n_soft_14" - Caso 68
+				level.add(1, "n_soft_14");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 69); // "n_soft_15" - Caso 69
+				level.add(1, "n_soft_15");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 70); // "n_soft_16" - Caso 70
+				level.add(1, "n_soft_16");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 71); // "n_soft_17" - Caso 71
+				level.add(1, "n_soft_17");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 72); // "n_soft_18" - Caso 72
+				level.add(1, "n_soft_18");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 73); // "n_soft_19" - Caso 73
+				level.add(1, "n_soft_19");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 74); // "n_soft_20" - Caso 74
+				level.add(1, "n_soft_20");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 75); // "n_soft_21" - Caso 75
+				level.add(1, "n_soft_21");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 76); // "n_soft_22" - Caso 76
+				level.add(1, "n_soft_22");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 78); // "n_soft_24" - Caso 78
+				level.add(1, "n_soft_24");
+				return level;
+			}
+
+			if (returnCase == 1 && nameCase == 3 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 79); // "n_soft_25" - Caso 79
+				level.add(1, "n_soft_25");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 83); // "n_soft_29" - Caso 83
+				level.add(1, "n_soft_29");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 84); // "n_soft_30" - Caso 84
+				level.add(1, "n_soft_30");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 85); // "n_soft_31" - Caso 85
+				level.add(1, "n_soft_31");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 86); // "n_soft_32" - Caso 86
+				level.add(1, "n_soft_32");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 87); // "n_soft_33" - Caso 87
+				level.add(1, "n_soft_33");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 88); // "n_soft_34" - Caso 88
+				level.add(1, "n_soft_34");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 89); // "n_soft_35" - Caso 89
+				level.add(1, "n_soft_35");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 90); // "n_soft_36" - Caso 90
+				level.add(1, "n_soft_36");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 91); // "n_soft_37" - Caso 91
+				level.add(1, "n_soft_37");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 92); // "n_soft_38" - Caso 92
+				level.add(1, "n_soft_38");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 93); // "n_soft_39" - Caso 93
+				level.add(1, "n_soft_39");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 94); // "n_soft_40" - Caso 94
+				level.add(1, "n_soft_40");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 96); // "n_soft_3" - Caso 57
+				level.add(1, "n_soft_42");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 97); // "n_soft_43" - Caso 97
+				level.add(1, "n_soft_43");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 98); // "n_soft_44" - Caso 98
+				level.add(1, "n_soft_44");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 99); // "n_soft_45" - Caso 99
+				level.add(1, "n_soft_45");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 100); // "n_soft_46" - Caso 100
+				level.add(1, "n_soft_46");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 101); // "n_soft_47" - Caso 101
+				level.add(1, "n_soft_47");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 102); // "n_soft_48" - Caso 102
+				level.add(1, "n_soft_48");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 103); // "n_soft_49" - Caso 103
+				level.add(1, "n_soft_49");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 104); // "n_soft_50" - Caso 104
+				level.add(1, "n_soft_50");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 105); // "n_soft_51" - Caso 105
+				level.add(1, "n_soft_51");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 106); // "n_soft_52" - Caso 106
+				level.add(1, "n_soft_52");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 107); // "n_soft_53" - Caso 107
+				level.add(1, "n_soft_53");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 108); // "n_soft_54" - Caso 108
+				level.add(1, "n_soft_54");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 4 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 109); // "n_soft_55" - Caso 109
+				level.add(1, "n_soft_55");
+				return level;
+			}
+			
+			if (returnCase == 2 && nameCase == 4 && paramCase == 1
+				&& excepCase == 1) 
+			{
+				level.add(0, 110); // "n_soft_56" - Caso 110
+				level.add(1, "n_soft_56");
+				return level;
+			}
+			
+			if (returnCase == 3 && nameCase == 4 && paramCase == 1
+				&& excepCase == 1) 
+			{
+				level.add(0, 111); // "n_soft_57" - Caso 111
+				level.add(1, "n_soft_57");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 1 && paramCase == 1
+				&& excepCase == 1) 
+			{
+				level.add(0, 112); // "n_soft_58" - Caso 112
+				level.add(1, "n_soft_58");
+				return level;
+			}
+	
+			if (returnCase == 4 && nameCase == 2 && paramCase == 1
+				&& excepCase == 1) 
+			{
+				level.add(0, 113); // "n_soft_59" - Caso 113
+				level.add(1, "n_soft_59");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 3 && paramCase == 1
+				&& excepCase == 1) 
+			{
+				level.add(0, 114); // "n_soft_60" - Caso 114
+				level.add(1, "n_soft_60");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 4 && paramCase == 1
+				&& excepCase == 1) 
+			{
+				level.add(0, 115); // "n_soft_61" - Caso 115
+				level.add(1, "n_soft_61");
+				return level;
+			}
+
+			if (returnCase == 1 && nameCase == 4 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 116); // "n_soft_62" - Caso 116
+				level.add(1, "n_soft_62");
+				return level;
+			}
+
+			if (returnCase == 2 && nameCase == 4 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 117); // "n_soft_63" - Caso 117
+				level.add(1, "n_soft_63");
+				return level;
+			}
+
+			if (returnCase == 3 && nameCase == 4 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 118); // "n_soft_64" - Caso 118
+				level.add(1, "n_soft_64");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 1 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 119); // "n_soft_65" - Caso 119
+				level.add(1, "n_soft_65");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 2 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 120); // "n_soft_66" - Caso 120
+				level.add(1, "n_soft_66");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 3 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 121); // "n_soft_67" - Caso 121
+				level.add(1, "n_soft_67");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 4 && paramCase == 2
+				&& excepCase == 1) 
+			{
+				level.add(0, 122); // "n_soft_68" - Caso 122
+				level.add(1, "n_soft_68");
+				return level;
+			}
+
+			if (returnCase == 1 && nameCase == 4 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 123); // "n_soft_69" - Caso 123
+				level.add(1, "n_soft_69");
+				return level;
+			}
+
+			if (returnCase == 2 && nameCase == 4 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 124); // "n_soft_70" - Caso 124
+				level.add(1, "n_soft_70");
+				return level;
+			}
+
+			if (returnCase == 3 && nameCase == 4 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 125); // "n_soft_71" - Caso 125
+				level.add(1, "n_soft_71");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 1 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 126); // "n_soft_72" - Caso 126
+				level.add(1, "n_soft_72");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 2 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 127); // "n_soft_73" - Caso 127
+				level.add(1, "n_soft_73");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 3 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 128); // "n_soft_74" - Caso 128
+				level.add(1, "n_soft_74");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 4 && paramCase == 3
+				&& excepCase == 1) 
+			{
+				level.add(0, 129); // "n_soft_75" - Caso 129
+				level.add(1, "n_soft_75");
+				return level;
+			}
+
+			if (returnCase == 1 && nameCase == 4 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 130); // "n_soft_76" - Caso 130
+				level.add(1, "n_soft_76");
+				return level;
+			}
+
+			if (returnCase == 2 && nameCase == 4 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 131); // "n_soft_77" - Caso 131
+				level.add(1, "n_soft_77");
+				return level;
+			}
+
+			if (returnCase == 3 && nameCase == 4 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 132); // "n_soft_78" - Caso 132
+				level.add(1, "n_soft_78");
+				return level;
+			}
+
+			if (returnCase == 3 && nameCase == 4 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 132); // "n_soft_78" - Caso 132
+				level.add(1, "n_soft_78");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 1 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 133); // "n_soft_79" - Caso 133
+				level.add(1, "n_soft_79");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 2 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 134); // "n_soft_80" - Caso 134
+				level.add(1, "n_soft_80");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 3 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 135); // "n_soft_81" - Caso 135
+				level.add(1, "n_soft_81");
+				return level;
+			}
+
+			if (returnCase == 4 && nameCase == 4 && paramCase == 4
+				&& excepCase == 1) 
+			{
+				level.add(0, 136); // "n_soft_82" - Caso 136
+				level.add(1, "n_soft_82");
+				return level;
+			}
+
+			level.add(0, 137); // Tener en cuenta el Sort para poner mas
+								// numeros
+			level.add(1, "misterioso");
+		} else {
+			level.add(new Integer(NO_COMPATIBLE));
+		}
+		return level;
+	}
+	
+	
+	// Falta arreglar los niveles en los que se agregan las compatibilidades nuevas,
+	// para que queden primeras en las listas respectivas. Deben ser nros enteros!!
+	private Vector getLevelCompatibilidadManual(int returnCase, int nameCase,
+			int paramCase, int excepCase) {
+		// Idenfica el caso de compatibilidad
+		Vector level = new Vector();
+		if (paramCase != 0 && returnCase != 0 && excepCase != 0) {
+			String rCase = "R" + returnCase;
+			String nCase = "N" + nameCase;
+			String pCase = "P" + paramCase;
+			String eCase = "E" + excepCase;
+			level.add(rCase);
+			level.add(nCase);
+			level.add(pCase);
+			level.add(eCase);
+
+			// 54 Casos manuales, chequeados. R puede ser 1, 2 ó 3.
+			// P puede ser 1,2,3 ó 4. 
+			// N, E pueden ser 1,2 ó 3.
+			
+			// --[ N_Exact
+			// ]-----------------------------------------------------------------------
+
+			if (returnCase == 3 && nameCase == 1 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 15); // "n_exact_14" - Caso 15
+				level.add(1, "n_exact_14");
+				return level;
+			}
+
+			// --[ Soft
+			// ]--------------------------------------------------------------------------			
+
+			if (returnCase == 1 && nameCase == 1 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 23); // "soft_8" - Caso 23
+				level.add(1, "soft_8");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 30); // "soft_15" - Caso 30
+				level.add(1, "soft_15");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 31); // "soft_16" - Caso 31
+				level.add(1, "soft_16");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 32); // "soft_17" - Caso 32
+				level.add(1, "soft_17");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 1 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 39); // "soft_24" - Caso 39
+				level.add(1, "soft_24");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 40); // "Soft_25" - Caso 40
+				level.add(1, "soft_25");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 48); // "Soft_33" - Caso 48
+				level.add(1, "soft_33");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 49); // "soft_34" - Caso 49
+				level.add(1, "soft_34");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 50); // "soft_35" - Caso 50
+				level.add(1, "soft_35");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 1
+					&& excepCase == 1) {
+				level.add(0, 51); // "soft_36" - Caso 51
+				level.add(1, "soft_36");
+				return level;
+			}
+			if (returnCase ==3 && nameCase == 1 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 52); // "soft_37" - Caso 52
+				level.add(1, "soft_37");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 53); // "soft_38" - Caso 53
+				level.add(1, "soft_38");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 54); // "soft_39" - Caso 54
+				level.add(1, "soft_39");
+				return level;
+			}
+
+
+			// --[ N_Soft
+			// ]------------------------------------------------------------------------
+			
+			if (returnCase == 1 && nameCase == 1 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 58); // "n_soft_4" - Caso 58
+				level.add(1, "n_soft_4");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 59); // "n_soft_5" - Caso 59
+				level.add(1, "n_soft_5");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 60); // "n_soft_6" - Caso 60
+				level.add(1, "n_soft_6");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 67); // "n_soft_13" - Caso 67
+				level.add(1, "n_soft_13");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 68); // "n_soft_14" - Caso 68
+				level.add(1, "n_soft_14");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 69); // "n_soft_15" - Caso 69
+				level.add(1, "n_soft_15");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 1
+					&& excepCase == 2) {
+				level.add(0, 70); // "n_soft_16" - Caso 70
+				level.add(1, "n_soft_16");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 71); // "n_soft_17" - Caso 71
+				level.add(1, "n_soft_17");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 2
+					&& excepCase == 2) {
+				level.add(0, 72); // "n_soft_18" - Caso 72
+				level.add(1, "n_soft_18");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 2
+					&& excepCase == 1) {
+				level.add(0, 73); // "n_soft_19" - Caso 73
+				level.add(1, "n_soft_19");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 74); // "n_soft_20" - Caso 74
+				level.add(1, "n_soft_20");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 75); // "n_soft_21" - Caso 75
+				level.add(1, "n_soft_21");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 76); // "n_soft_22" - Caso 76
+				level.add(1, "n_soft_22");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 2 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 78); // "n_soft_24" - Caso 78
+				level.add(1, "n_soft_24");
+				return level;
+			}
+
+			if (returnCase == 1 && nameCase == 3 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 79); // "n_soft_25" - Caso 79
+				level.add(1, "n_soft_25");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 1 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 83); // "n_soft_29" - Caso 83
+				level.add(1, "n_soft_29");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 84); // "n_soft_30" - Caso 84
+				level.add(1, "n_soft_30");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 85); // "n_soft_31" - Caso 85
+				level.add(1, "n_soft_31");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 1
+					&& excepCase == 3) {
+				level.add(0, 86); // "n_soft_32" - Caso 86
+				level.add(1, "n_soft_32");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 87); // "n_soft_33" - Caso 87
+				level.add(1, "n_soft_33");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 88); // "n_soft_34" - Caso 88
+				level.add(1, "n_soft_34");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 89); // "n_soft_35" - Caso 89
+				level.add(1, "n_soft_35");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 90); // "n_soft_36" - Caso 90
+				level.add(1, "n_soft_36");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 3
+					&& excepCase == 1) {
+				level.add(0, 91); // "n_soft_37" - Caso 91
+				level.add(1, "n_soft_37");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 92); // "n_soft_38" - Caso 92
+				level.add(1, "n_soft_38");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 93); // "n_soft_39" - Caso 93
+				level.add(1, "n_soft_39");
+				return level;
+			}
+			if (returnCase == 1 && nameCase == 3 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 94); // "n_soft_40" - Caso 94
+				level.add(1, "n_soft_40");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 2 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 96); // "n_soft_3" - Caso 57
+				level.add(1, "n_soft_42");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 97); // "n_soft_43" - Caso 97
+				level.add(1, "n_soft_43");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 2
+					&& excepCase == 3) {
+				level.add(0, 98); // "n_soft_44" - Caso 98
+				level.add(1, "n_soft_44");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 99); // "n_soft_45" - Caso 99
+				level.add(1, "n_soft_45");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 3
+					&& excepCase == 2) {
+				level.add(0, 100); // "n_soft_46" - Caso 100
+				level.add(1, "n_soft_46");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 1 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 101); // "n_soft_47" - Caso 101
+				level.add(1, "n_soft_47");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 102); // "n_soft_48" - Caso 102
+				level.add(1, "n_soft_48");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 4
+					&& excepCase == 1) {
+				level.add(0, 103); // "n_soft_49" - Caso 103
+				level.add(1, "n_soft_49");
+				return level;
+			}
+			if (returnCase == 2 && nameCase == 3 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 104); // "n_soft_50" - Caso 104
+				level.add(1, "n_soft_50");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 3
+					&& excepCase == 3) {
+				level.add(0, 105); // "n_soft_51" - Caso 105
+				level.add(1, "n_soft_51");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 2 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 106); // "n_soft_52" - Caso 106
+				level.add(1, "n_soft_52");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 4
+					&& excepCase == 2) {
+				level.add(0, 107); // "n_soft_53" - Caso 107
+				level.add(1, "n_soft_53");
+				return level;
+			}
+			if (returnCase == 3 && nameCase == 3 && paramCase == 4
+					&& excepCase == 3) {
+				level.add(0, 108); // "n_soft_54" - Caso 108
+				level.add(1, "n_soft_54");
+				return level;
+			}
+			level.add(0, 109); // Tener en cuenta el Sort para poner mas
+			// numeros
+			level.add(1, "misterioso");
+		} else {
+			level.add(new Integer(NO_COMPATIBLE));
+		}
+		return level;
+	}
+	
+	
+
+	private boolean isCompatibleParameters(TMethod c1Method, TClass c1,TMethod c2Method, TClass c2) {
+		boolean allUsed = true;
+		int max1 = c1Method.getParametros().size();
+		int max2 = c2Method.getParametros().size();
+		
+		if (max1 == max2) {
+			if (max1 != 0) {
+				boolean[] used = new boolean[max1];
+				boolean[] used2 = new boolean[max1];
+				//setea ambos arreglos de verdad.
+				for (int j = 0; j < max1; j++) {
+					used[j] = false; // Controla que se matcheen todos los
+										// parametros de c1Method.
+					used2[j] = false; // Controla que no se use mas de una vez
+										// cada parametro de c2Method.
+				}
+				
+				for (int j = 0; j < max1; j++) {
+					TParameter m1Par = c1Method.getParametro(j);
+					
+					for (int k = 0; k < max2; k++) {
+						TParameter m2Par = c2Method.getParametro(k);
+						if ((m1Par.getTipo().equals(m2Par.getTipo()) || 
+								m1Par.getTipo().equals(c1.getName())
+								&& m2Par.getTipo().equals(c2.getName()))
+								&& !used[k]) {
+							used[k] = true;
+							//MATRIZ [J][K] = 1;
+							//used[j] = true;
+							//used2[k] = true;
+						}
+					}
+				}
+				//Controlo que hay parametros del mismo tipo (cantidad son iguales) pero estan
+				//desordenados. 
+				//Ej: m1(int x, String b,int y)
+				//    m2(int x, int y, String b)
+				
+				
+				for (int k = 0; k < used.length; k++) 					
+					//allUsed = allUsed && used[k] && used2[k];			
+					allUsed = allUsed && used[k];
+			} else
+				allUsed = false;
+			return allUsed;
+		} else
+			return false;
+	}
+
+	private boolean isCompatibleExceptions(TMethod c1Method, TMethod c2Method) {
+		boolean allUsed = true;
+		int max1 = c1Method.getLaunchedExceptions().size();
+		int max2 = c2Method.getLaunchedExceptions().size();
+		if (max1 == max2) {
+			if (max1 != 0) {
+				boolean[] used = new boolean[max1];
+				for (int j = 0; j < max1; j++)
+					used[j] = false;
+				for (int j = 0; j < max1; j++) {
+					String m1Excep = c1Method.getLaunchedExceptions().get(j)
+							.toString();
+					for (int k = 0; k < max2; k++) {
+						String m2Excep = c2Method.getLaunchedExceptions()
+								.get(k).toString();
+						if (m1Excep.equals(m2Excep) && !used[k])
+							used[k] = true;
+					}
+				}
+				for (int k = 0; k < used.length; k++)
+					allUsed = allUsed && used[k];
+			}
+			return allUsed;
+		} else
+			return false;
+	}
+
+	private boolean isExistsException(TMethod c1Method, TMethod c2Method) {
+		if (c1Method.getLaunchedExceptions().size() != 0) {
+			if (c2Method.getLaunchedExceptions().size() == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+		
+	
+	private double isSubTypeReturn(TMethod c1Method, TMethod c2Method) 
+	{	double complexReturnTypeResult=0.0, returnTypeResult, nameResult;
+		int ret;
+		Vector vecStems = new Vector();
+		int[] nameResultArray;
+		if (!(Agente.getAgente().esPrimitivo(c1Method.getTipo())) && !(Agente.getAgente().esPrimitivo(c2Method.getTipo()))) 
+		{
+			returnTypeResult = SemanticInterfaceCompatibility.fieldCaseValue(c1Method,c2Method);
+			nameResultArray = SemanticInterfaceCompatibility.assessNameCompatibility(c1Method.getTrueClass().getName(), c2Method.getTrueClass().getName(), vecStems);
+			nameResult = SemanticInterfaceCompatibility.compatibleValue(nameResultArray,(Vector) vecStems.get(0), (Vector)vecStems.get(1));
+			complexReturnTypeResult = (returnTypeResult * (1 + nameResult))/2; //Agregué la división por 2 en éste punto y no en la discretización.
+			
+			//Discretización
+						
+			//Impresión a Excel
+			
+			/*FileWriter fichero = null;
+	        PrintWriter pw = null;	
+			fichero = new FileWriter("C:/Análisis de complejos.txt",true);
+			pw = new PrintWriter(fichero);
+			try
+	        {
+				pw.print(c1Method.getTrueClass().getName() + ",");
+				java.lang.reflect.Field[] f1;
+				if (c1Method.getTrueClass().getComponentType() != null){ f1 = c1Method.getTrueClass().getComponentType().getDeclaredFields();}							
+				else{f1 = c1Method.getTrueClass().getDeclaredFields();}
+				int limitF1 = f1.length;
+				for (int i = 0; i < limitF1; i++) {pw.print(f1[i].getName() + " (" + f1[i].getType() + ") ");}
+				
+				pw.print(","+ c2Method.getTrueClass().getName() + ",");
+				java.lang.reflect.Field[] f2;
+				if (c2Method.getTrueClass().getComponentType() != null){f2 = c2Method.getTrueClass().getComponentType().getDeclaredFields();}							
+				else{f2 = c2Method.getTrueClass().getDeclaredFields();}
+				int limitF2 = f2.length;
+				for (int i = 0; i < limitF2; i++) {pw.print(f2[i].getName()  + " (" + f2[i].getType() + ") ");}
+				
+				pw.println(","+returnTypeResult+","+nameResult+","+complexReturnTypeResult);
+				
+	           } 
+			
+			 catch (Exception e) {e.printStackTrace();} 
+			 finally 
+			 {
+			 try 
+			 {
+			 if (null != fichero)
+			 fichero.close();
+			 } 
+			 catch (Exception e2){e2.printStackTrace();}
+			 }*/
+		}
+		
+			// PARTE NUEVA PRIMITIVO VS.COMPLEJO
+		else 
+		{
+			// Preguntar si c2Method es complejo, y si hay algún campo que coincida con el tipo de retorno esperado por c1Method.
+			//Recorrer los fields del tipo de c2Method y ver si alguno es del mismo tipo (equals) o subtipo (con isSubTyping) que c1Method.
+			//En ese caso devolver un valor double que según la discretización sea R3
+
+			if (Agente.getAgente().esPrimitivo(c1Method.getTipo()) && !(Agente.getAgente().esPrimitivo(c2Method.getTipo())))
+				{complexReturnTypeResult = SemanticInterfaceCompatibility.simpleFieldCaseValue(c1Method,c2Method);
+				 
+				}
+		}
+		return complexReturnTypeResult;
+	}
+
+	
+	public static double isSubTypeParameters(TParameter c1Param, TParameter c2Param) throws IOException {
+		
+				if (isSubTyping(c1Param.getTipo(), c2Param.getTipo()))	return 1.5;
+							
+						// Inicio parte nueva -- Comparacion tipos complejos
+				else {
+					if (!(Agente.getAgente().esPrimitivo(c1Param.getTipo())) && !(Agente.getAgente().esPrimitivo(c2Param.getTipo()))) 
+					{	
+						double cplxParamTypeResult, cplxNameResult, complexReturnTypeResult;
+						cplxParamTypeResult = 0;
+						Vector vecStems = new Vector();
+						int[] cplxNameResultArray;
+						
+						System.out.println(	"Nombre del Tipo Complejo del Param1: " + c1Param.getTipo());
+						System.out.println(	"Nombre del Tipo Complejo del Param2: " + c2Param.getTipo());
+
+						//implementar  fieldCaseValueParam basado en FieldCaseValue
+						cplxParamTypeResult = SemanticInterfaceCompatibility.fieldCaseValueParam(c1Param,c2Param); 
+
+						// de acá para abajo reemplazar los argumentos de las llamadas por lo correspondiente para obtener los nombres del tipo de c1Param y c2Param en vez de c1Method y c2Method
+						cplxNameResultArray = SemanticInterfaceCompatibility.assessNameCompatibility(c1Param.getTipo(), c2Param.getTipo(), vecStems);
+						cplxNameResult = SemanticInterfaceCompatibility.compatibleValue(cplxNameResultArray,(Vector) vecStems.get(0), (Vector)vecStems.get(1));
+						
+						complexReturnTypeResult = (cplxParamTypeResult * (1 + cplxNameResult)); //QUITE DIVISIÓN POR 2
+
+						System.out.println("ret isSubTypeParameters " + complexReturnTypeResult);
+						return complexReturnTypeResult;
+						
+						
+					}
+					else return 1;
+				}
+				
+			}
+			
+
+	// CLASES ENVOLVENTES - en orden de menor a mayor capacidad.
+
+	// byte --> Byte
+	// short --> Short
+	// char --> Character
+	// int --> Integer
+	// long --> Long
+	// float --> Float
+	// double --> Double
+	// ¿BOOLEAN?
+
+	// Se incluyeron todas las conversiones sin pérdida de precision, según
+	// nueva def. R2
+	// y la compatibilidad de String con cualquier tipo.
+	// M.G. 14/09/2010 Agregados arrays de tipos simples EN PARAMETROS.
+	// Significado:
+	// [B --> array de byte
+	// [S --> array de short
+	// [I --> array de int
+	// [J --> array de long, prestar atencion! es J y no L como uno supondría!
+	// [F --> array de float
+	// [D --> array de double
+
+	public static boolean isSubTyping(String type1, String type2) {
+		boolean res = false;
+		String lstByte = "byte,Byte,short,Short,int,Integer,long,Long,float,Float,double,Double,String";
+		String lstShort = "short,Short,int,Integer,long,Long,float,Float,double,Double,String";
+		String lstInt = "int,Integer,long,Long,float,Float,java.lang.double,java.lang.Double,double,Double,String";
+		String lstLong = "long,Long,float,Float,double,Double,String";
+		String lstFloat = "float,Float,double,Double,java.lang.String";
+		String lstChar = "char,Character,String";
+		//String lstDouble = "double,Double,String";
+	//	String lstDouble = "java.lang.double,java.lang.Double,double,Double,long,Long,String,int,Integer";
+		String lstDouble = "java.lang.double,java.lang.Double,double,Double,long,Long,String";
+		String lstarrayByte = "[B,[S,[I,[J,[F,[D";
+		String lstarrayShort = "[S,[I,[J,[F,[D";
+		String lstarrayInt = "[I,[J,[F,[D";
+		String lstarrayLong = "[J,[F,[D";
+		String lstarrayFloat = "[F,[D";
+		String lstarrayDouble = "[D";
+		String lstarrayChar = "[C";
+
+		// Si el tipo esperado es String, aceptamos cualquier cosa
+		if (type1 == "java.lang.String") {
+			res = true;
+			return res;
+		}
+		// Análisis de tipos primitivos
+		if ((type1 == "char") || (type1 == "Character"))
+			if (lstChar.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if ((type1 == "byte") || (type1 == "Byte"))
+			if (lstByte.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if ((type1 == "short") || (type1 == "Short"))
+			if (lstShort.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if ((type1 == "int") || (type1 == "Integer"))
+			if (lstInt.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if ((type1 == "long") || (type1 == "Long"))
+			if (lstLong.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if ((type1 == "float") || (type1 == "Float"))
+			if (lstFloat.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		//if ((type1 == "double") || (type1 == "Double"))
+		if (type1.toLowerCase().equals("java.lang.double") || (type1.toLowerCase().equals("java.lang.Double")) || (type1 == "double") || (type1 == "Double"))
+			if (lstDouble.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+
+		// // Analisis de ARRAYS de tipos primitivos!
+		if (type1 == "[C")
+			if (lstarrayChar.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if (type1 == "[B")
+			if (lstarrayByte.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if (type1 == "[S")
+			if (lstarrayShort.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if (type1 == "[I")
+			if (lstarrayInt.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if (type1 == "[J")
+			if (lstarrayLong.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if (type1 == "[F")
+			if (lstarrayFloat.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		if (type1 == "[D")
+			if (lstarrayDouble.indexOf(type2) != -1) {
+				res = true;
+				return res;
+			}
+		return res;
+	}
+
+	private Vector addCompatibleMethod(Vector compatibles, TMethod c2Method, Vector level, double adaptabilityGap) {
+		// no envio el HashTable, sino solo el vector..
+		// level.add(2,c2Method.getWholeSignature()); // nivel de compatibility
+		level.add(2, c2Method);
+		//level.add(3,adaptabilityGap);
+		level.add(3,adaptabilityGap);
+		
+		
+
+		if (compatibles == null) {
+			compatibles = new Vector();
+		}
+		compatibles.add(level);
+		return compatibles;
+	}
+
+	/**
+	 * -----------------------------------------------------------------
+	 * Ordenamiento en O(n). Se usa cuando las claves de búsqueda están dentro
+	 * de un rango determinado (finito y conocido). Algoritmo: enumeración por
+	 * Distribución
+	 */
+
+	public Vector getSortedVector(Vector a, int rango) {
+		int max = a.size();
+		Vector[] salida = new Vector[max];
+		Integer clave = new Integer(0);
+		int[] count = new int[rango];
+
+		for (int i = 0; i < max; i++) {
+			// cuenta las veces que se repite una clave en count.
+			clave = (Integer) ((Vector) a.get(i)).get(0);
+			count[clave.intValue()]++;
+		}
+
+		for (int i = 1; i < rango; i++) {
+			// calcula la posicion más a la derecha de una clave.+1
+			count[i] = count[i - 1] + count[i];
+		}
+
+		for (int i = max - 1; i >= 0; i--) {
+			// ubica al elemento en la posicion que corresponde.
+			clave = (Integer) ((Vector) a.get(i)).get(0);
+			int j = count[clave.intValue()] - 1;
+			salida[j] = (Vector) a.get(i);
+			count[clave.intValue()]--;
+		}
+
+		Vector resultado = new Vector(max);
+		for (int i = 0; i < max; i++) {
+			resultado.add(salida[i]);
+		}
+
+		return resultado;
+	}
+
+	public String getSummary() {
+		return summary;
+	}
+
+	public String getSummaryList() {
+		return summaryList;
+	}
+
+	public Hashtable getCompatibilities() {
+		return compatibilities;
+	}
+	
+	//public void buildWrappers() {
+	public void buildWrappers(int desde, int hasta,String tipoWrappers,String pathWTP,String pathWsdl) {
+		int nivel = 1; // nivel en el arbol de wrappers
+		//Arbol a = new Arbol();
+		//Recupero estructura arbol t
+		Arbol a = this.t;		
+		Vector hojas = new Vector();
+		a.cargaHojas(hojas);
+		//System.out.println("hojas.size: "+hojas.size());
+		this.parentWindow.setMaximum(hojas.size());
+		this.parentWindow.setPos(0);
+		for (int i = 0; i < hojas.size(); i++) {
+			// for (int i=0; i<300; i++) { // para ir generando de a bloques
+			Arbol hoja = (Arbol) hojas.get(i);
+			////System.out.println("wrapper " + i);
+        	//jfBuildWindows.logMsg("Generando wrapper " + i);
+			
+			//this.parentWindow.logError("wrapper " + i);
+			buildWrapper(hoja, i,tipoWrappers,pathWTP,pathWsdl);
+		}
+		//jfBuildWindows.logMsg("Ha terminado");
+	}
+
+	private void buildWrapper(Arbol hoja, int n,String tipoWrappers,String pathWTP,String pathWsdl) {
+		//pathWTP : nombre paquete con el que se va a buscar 
+		String outputPath = Configuration.getInstance().getResultsPath()
+				+ "wrappers";
+		Arbol laHoja = hoja;
+		Wrapper w = new Wrapper();
+		w.setOriginalClass(hoja.originalMethod.getClassName());
+		w.setCandidateClass(hoja.mValor.getClassName());
+		w.setNamePackageCandidate(hoja.mValor.getClass().getPackage().getName());
+		w.setTipoWrapper(tipoWrappers);
+		//System.out.println("Wrapper IF: "+a.getIFName());
+		
+		w.setImplementaIF(a.getIFName());
+
+		while (hoja.mPadre != null) {
+			WMethod wm = new WMethod();
+			wm.setOriginalMethod(hoja.originalMethod);
+			wm.setCandidateMethod(hoja.mValor);
+			wm.setParamMatches(hoja.paramMatches);
+			w.addMethod(wm);
+			hoja = hoja.mPadre;
+		}
+		try {
+			String origClassName = Auxi.recorta(laHoja.originalMethod.getClassName());
+			String thePackage = laHoja.originalMethod.getClassName()
+					.substring(0,
+							laHoja.originalMethod.getClassName().indexOf(origClassName) - 1);
+			
+			String thePackageCandidate = b.getName().substring(0,b.getName().lastIndexOf("."));
+			//System.out.println("thePackageCandidate: "+thePackageCandidate);
+			outputPath = crearDirectorio(n, thePackage, outputPath);
+			//genero el IF de la clase original (xa q compile)
+			if (!a.getIFName().equals("")){
+					String nitf = a.getIFName().substring(a.getIFName().lastIndexOf(".")+1, a.getIFName().length());
+					//System.out.println("nitf: "+nitf);
+					String itf = generaIF(nitf,thePackage);						   
+					FileOutputStream iffile = new FileOutputStream(outputPath + "/"	+ nitf + ".java");
+					iffile.write(itf.getBytes());
+					compiloIF(outputPath + "/"	+ nitf + ".java");
+				}
+			FileOutputStream fo = new FileOutputStream(outputPath + "/"	+ origClassName + ".java");
+			//System.out.println(outputPath + "/"	+ origClassName + ".java");
+			//System.out.println("pathWTP: "+pathWTP);
+			//System.out.println("outputPath: "+outputPath);
+			/*COPIAR DIRECTORIOS WTP a DESTINO*/
+			try{
+				Copiar cop = new Copiar();
+				String destino=Configuration.getInstance().getResultsPath()+ "wrappers/" + n +"/" ;
+				//System.out.println("copio a: "+destino);
+				if (tipoWrappers.equals("S")){
+					cop.copiaDirectorios(pathWTP, destino);
+					//Armo el factory que será llamado desde el TS (TestSuit)
+					//generaAuxCallServicios(destino,origClassName,b.getName());
+					String destinoConector=Configuration.getInstance().getResultsPath()+ "wrappers/" + n +"/"+thePackageCandidate.replace('.', '/') ;
+					String nClaseCandid = b.getName().substring(b.getName().lastIndexOf(".")+1, b.getName().length());
+					   //System.out.println("nClaseCandid: "+nClaseCandid+" genera Conector en: "+destinoConector);
+					generaConector(pathWsdl,destinoConector,thePackageCandidate,nClaseCandid );
+					compiloConectorStub(destinoConector,thePackageCandidate,n);
+	            	//System.out.print("Servicios: Copiado con exito");
+				}
+	        }catch(Exception e){ 
+	            //System.out.println(e+" WTP"); 
+	        } 
+			/*COPIAR DIRECTORIOS WTP a DESTINO*/
+			fo.write(w.getJava().getBytes());
+			fo.close();
+			Vector<String> lotcv = new Vector<String>();
+			lotcv.add(Configuration.getInstance().getResultsPath()+ "wrappers/" + n);
+			
+			String cp = this.classPathCandidate;
+			me.domain.Compiler compiler = new me.domain.Compiler(lotcv,
+					thePackage, origClassName, cp, this.parentWindow,
+					this.parentWindow);
+			compiler.compile(Configuration.getInstance().getResultsPath()
+					+ "wrappers/" + n, thePackage, origClassName);
+			this.parentWindow.setPos(n);
+		} catch (Exception e) {
+			this.parentWindow.logError(e.toString()+" HOLA");
+		}
+	}
+
+	private void compiloIF(String iffile) {
+		//System.out.println("largo a compilar la interfase: "+iffile);
+		String[] commandArray = {"javac" ,iffile};
+		String[] environment ={};
+		Runtime runtime = Runtime.getRuntime();
+        try {
+			Process javac = runtime.exec(commandArray, environment);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void compiloConectorStub(String destinoConector,String thePackageCandidate,int n) {
+		String pathAxis="C://axis2-1.5.5//lib//*;.;";
+		destinoConector = Configuration.getInstance().getResultsPath()+ "wrappers/" + n +"/";
+        String[] commandArray = {"javac" ,
+        		"-cp",pathAxis,destinoConector+thePackageCandidate.replace('.','/')+"/*.java"};
+        /*String[] environment = {"path=;", 
+        	"path=C:\\Program Files (x86)\\Java\\jdk1.6.0_22\\bin;"	
+        };*/
+        String[] environment ={};
+
+        Runtime runtime = Runtime.getRuntime();
+        try {
+			Process javac = runtime.exec(commandArray, environment);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//System.out.println("trato de compilar conectorStub!!!");
+			e.printStackTrace();
+		}
+	}
+
+	private void generaConector(String pathWSDL,String destinoConector,String packageCandidate, String claseCandid) {
+		try {
+			FileOutputStream fo = new FileOutputStream(destinoConector + "/"+claseCandid+".java");
+			try {
+				fo.write(generaCodJavaConector(pathWSDL,packageCandidate,claseCandid));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private byte[] generaCodJavaConector(String pathWSDL,String packageCandidate,String claseCandid) {
+		String codeCon="";
+		String nombreServicio= Wsdl.nombreServicio(pathWSDL);
+		String stubclase=nombreServicio+"Stub";
+		codeCon+="package "+packageCandidate+";\n";
+		
+		codeCon+="import "+packageCandidate+"."+"*;\n\n\n";
+		codeCon+="public class "+claseCandid+" {\n";
+		//Constructor
+		codeCon+="\tpublic "+claseCandid+"(){\n";
+		codeCon+="\t\t"+stubclase+" customer = null;\n";
+		codeCon+="\t\ttry{\n";
+		codeCon+="\t\t\tcustomer = new "+stubclase+"();\n";
+		//codeCon+="\t\t\tcustomer."+Wsdl.primeraLower(claseCandid)+"();\n";
+		codeCon+="\t\t}catch (Exception e) {\n"; //del try
+		codeCon+="\t\t\t//System.out.println(e.toString());\n"; 
+		codeCon+="\t\t}\n";
+		codeCon+="\t}\n";
+		//Fin Constructor
+		//Debo recorrer todos los metodos del candidato y generarlos
+		Vector metodos = (Vector) b.getMethods();
+		for (int i=0;i<metodos.size();i++){
+			TMethod me=(TMethod) metodos.get(i);
+				String lparms = "";
+				Vector parametros = (Vector) me.getParametros();
+				for(int j=0;j<parametros.size();j++){
+					TParameter parm = (TParameter) parametros.get(j);
+					lparms+=parm.getTipo() +" "+"arg"+j;
+					if (j==parametros.size()-1)
+						lparms+="";
+					else
+						lparms+=",";
+				}
+				Vector argumentos = Wsdl.getArgs(pathWSDL,me.getNombre());
+				//Vector argResponse = Wsdl.getArgs(pathWSDL,me.getNombre()+"Response");
+				Vector argResponse = Wsdl.recuperaTipoRetorno(pathWSDL,me.getNombre());
+				codeCon+="\tpublic "+me.getTipo()+" "+me.getNombre()+"("+ lparms+"){\n";
+				codeCon+="\t\t"+stubclase+" customer = null;\n";
+				if (argumentos.size()>0)
+					codeCon+="\t\t"+stubclase+"."+me.getNombre1Upper()+" request = null;\n";
+				if (!argResponse.get(0).equals("void"))
+					codeCon+="\t\t"+stubclase+"."+me.getNombre1Upper()+"Response" + " response = null;\n";
+				codeCon+="\t\ttry{\n";
+				codeCon+="\t\t\tcustomer = new "+stubclase+"();\n";
+				if (argumentos.size()>0)
+					codeCon+="\t\t\trequest = new "+stubclase+"."+me.getNombre1Upper()+"();\n";
+				//el elemento request setea los parámetros con un metodo set(nombreParámetros)
+				//No puedo recuperar el nombre del parámetro por reflexion (salvo compilar con opcion -g)
+
+				//for (int j=0;j<argumentos.size();j++){
+				int posArgumentos=0;
+				for (int j=argumentos.size() -1;j>=0;j--){
+					codeCon+="\t\t\trequest.set"+Wsdl.primeraUpper((String)argumentos.get(j))+"(arg"+posArgumentos+");\n";
+					posArgumentos+=1;
+				}
+				if (argumentos.size()>0){
+					if (!argResponse.get(0).equals("void"))
+						codeCon+="\t\tresponse = customer."+Wsdl.primeraLower(me.getNombre())+"(request);\n";
+					else
+						codeCon+="\t\tcustomer."+Wsdl.primeraLower(me.getNombre())+"(request);\n";
+				}
+				else
+					if (argResponse.size()>0)
+						codeCon+="\t\tresponse = customer."+Wsdl.primeraLower(me.getNombre())+"();\n";
+					else
+						codeCon+="\t\tcustomer."+Wsdl.primeraLower(me.getNombre())+"();\n";
+
+				codeCon+="\t\t}catch (Exception e) {\n"; //del try
+				codeCon+="\t\t\t//System.out.println(e.toString());\n"; 
+				codeCon+="\t\t}\n";
+				if (!me.getTipo().equals("void"))
+					if (argResponse.size()>0){
+						String nombreResponse = (String)argResponse.get(1);
+						if (!nombreResponse.isEmpty()){
+							if (nombreResponse.substring(0, 1).toLowerCase().equals(nombreResponse.substring(0, 1)))
+								codeCon+="\t\treturn response.get_";
+							else
+								codeCon+="\t\treturn response.get";
+						}
+						codeCon+=nombreResponse+"();\n";
+					}
+				codeCon+="\t}\n";
+		}
+		codeCon+="}\n";		
+		return codeCon.getBytes();
+	}
+
+	private String generaIF(String origClassName,String packageName) {
+		String codjava="";
+		if (!packageName.equals(""))
+			codjava+="package "+packageName+";";
+		codjava+="public interface "+origClassName+"{\n";
+		Vector metodos = (Vector) a.getMethods();
+		for (int i=0;i<metodos.size();i++){
+			TMethod me=(TMethod) metodos.get(i);
+				String lparms = "";
+				Vector parametros = (Vector) me.getParametros();
+				for(int j=0;j<parametros.size();j++){
+					TParameter parm = (TParameter) parametros.get(j);
+					lparms+=parm.getTipo() +" "+"arg"+j;
+					if (j==parametros.size()-1)
+						lparms+="";
+					else
+						lparms+=",";
+				}
+				codjava+="\t"+me.getTipo()+" "+me.getNombre()+"("+ lparms+");\n";
+		}
+		codjava+="\n";
+		codjava+="}";
+		
+		return codjava;
+	}
+
+	private void generaAuxCallServicios(String destino,String origClassName,String nombreCandidate) {
+		try {
+			FileOutputStream fo = new FileOutputStream(destino + "/"+"Factory"+origClassName+".java");
+			try {
+				fo.write(generaFactory(origClassName,nombreCandidate));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
+	private byte[] generaFactory(String nombreClase,String nombreCandidate) {
+		String code="public class Factory"+nombreClase+"{\n";
+		//constructor
+		code+="public Factory"+nombreClase+" {\n";
+		code+="\t}\n\n";//cierre metodo constructor
+		//get--+--nombreClase
+		code+="public "+nombreCandidate+" get"+nombreClase+"(){\n";
+		code+="\t"+nombreClase+" obtained = null;\n";
+		code+="\tobtained = new "+nombreClase+"();\n";
+		code+="\t"+nombreCandidate +" proxy = this.getProxy();\n";
+		code+="\tobtained.setProxy(proxy);\n";
+		code+="\treturn obtained;\n";
+		code+="\t}\n\n";//metodo getnombreClase
+		code+="public "+nombreCandidate+" getProxy(){\n";
+		code+="\t"+nombreCandidate+" binding = null;\n";
+		code+="\tbinding = new "+nombreCandidate+"();\n";
+		code+="\treturn binding;\n";
+		code+="\t}\n\n"; //del metodo getproxy()
+		code+="\t}"; //de la clase.
+		
+		return code.getBytes();
+	}
+
+	private String crearDirectorio(int n, String thePackage, String outputPath) {
+		outputPath = outputPath.endsWith("/") ? outputPath : outputPath + "/";
+		File f = new File(outputPath);
+		f.mkdir();
+		outputPath = outputPath + n;
+		f = new File(outputPath);
+		f.mkdir();
+
+		if (thePackage.indexOf(".") != -1) {
+			Vector<String> directorios = new Vector();
+			while (thePackage.indexOf(".") != -1) {
+				int i = thePackage.indexOf(".");
+				directorios.add(thePackage.substring(0, i));
+				thePackage = thePackage.substring(i + 1, thePackage.length());
+			}
+			directorios.add(thePackage);
+			//System.out.println("directorios " + directorios.toString());
+			for (int i = 0; i < directorios.size(); i++) {
+				String path = outputPath + "/" + directorios.get(i);
+				f = new File(path);
+				f.mkdir();
+				outputPath = path;
+			}
+		} else {
+			String path = outputPath + "/" + thePackage;
+			f = new File(path);
+			f.mkdir();
+			outputPath = path;
+		}
+		return outputPath;
+	}
+
+	private Arbol checkAddCombinations(TMethod c1Method, Arbol a, Vector oper,int nivel) {
+		String paramCase = (String) oper.get(5); // obtiene el caso de
+													// compatibilidad de
+													// parametros
+		String excepCase = (String) oper.get(6); // obtiene el caso de
+													// compatibilidad de
+													// excepciones
+		Vector paramMatches = null;
+		Vector excepMatches = null;
+		TMethod c2Method = (TMethod) oper.get(2); // obtiene el metodo
+													// compatible
+		if (c2Method.getParametros().size() < 2) {
+			Vector pMatch = new Vector();
+			if (!c2Method.getParametros().isEmpty())
+				pMatch.add(0);
+			a.add(c2Method, pMatch, nivel, c1Method);
+		} else {
+			if (paramCase.equals(new String("P2"))) {
+				paramMatches = getParamMatches(c1Method, c2Method);
+				if (paramMatches != null)
+					for (int i = 0; i < paramMatches.size(); i++) {
+						Vector pMatch = (Vector) paramMatches.get(i);
+						a.add(c2Method, pMatch, nivel, c1Method);
+						// int x= 0;
+					}
+			} else { // son P1 con cant param > 1 o P3
+				Vector pMatch = new Vector();
+				for (int i = 0; i < c2Method.getParametros().size(); i++)
+					pMatch.add(i);
+				a.add(c2Method, pMatch, nivel, c1Method);
+			}
+		}
+		// CONSIDERO AHORA SOLO LOS PARAMETROS
+
+		/*
+		 * if (excepCase == "E1"){
+		 *  } else { if (excepCase == "E2"){ excepMatches =
+		 * getExcepMatches(c1Method, c2Method); } else if (excepCase == "E3"){
+		 *  } } }
+		 */
+		return a;
+	}
+
+	private Vector getParamMatches(TMethod c1Method, TMethod c2Method) {
+		//System.out.println("getParamMatches -----------------------------------------------------------");
+		//System.out.println("c1Method: "+c1Method.getNombre());
+		//System.out.println("c2Method: "+c2Method.getNombre());
+		//System.out.println("---Mapeo:");
+		MuestraElementosVector(MapeoParms(c1Method, c2Method));
+		//System.out.println("---Mapeo---");
+		//System.out.println("---Subindice---");
+		MuestraElementosVector(ParmsSubindice(c1Method.getParametros()));
+		//System.out.println("---//Subindice---");
+		Vector paramMatches = new Vector();
+		Vector locatedI = new Vector();
+		Vector locatedJ = new Vector();
+		int max1 = c1Method.getParametros().size();
+		////System.out.println("c1Method.getParametros(): ");
+		//MuestraElementosVector(c1Method.getParametros());
+		////System.out.println("c2Method.getParametros(): ");
+		//MuestraElementosVector(c2Method.getParametros());
+		////System.out.println("c1Method.getParametros().size(): "+max1);
+		Vector pMatch = null;
+		Vector repeatedParams = getRepeatedParams(c1Method, c2Method);
+		//System.out.println("INICIO repeatedParams: ");
+		MuestraElementosVector(repeatedParams);
+		//System.out.println("FIN repeatedParams: TAMAÑO: "+repeatedParams.size());
+		////System.out.println("INICIO : ConjPreCombinacion ");
+		//MuestraElementosVector(ConjPreComb(c1Method,repeatedParams));
+		////System.out.println("FIN : ConjPreCombinacion ");
+		//System.out.println("INICIO : Conjunto de combinaciones ");
+		Vector mapeo2=c2Method.getParametros();
+		paramMatches=PermutacionesParms(ConjPreComb(c1Method,repeatedParams),repeatedParams,mapeo2,c2Method,c1Method);
+		MuestraElementosVector(paramMatches);
+		//System.out.println("FIN : Conjunto de combinaciones ");
+		//System.out.println("getParamMatches -----------------------------------------------------------");
+		return paramMatches;
+	}
+
+	
+
+
+
+	private Vector getRepeatedParams(TMethod c1Method, TMethod c2Method) {
+		Vector repeatedParams = new Vector();
+		int max1 = c1Method.getParametros().size();
+		int[] used = new int[max1];
+		for (int i = 0; i < max1; i++) {
+			TParameter m1Par = c1Method.getParametro(i);
+			for (int j = 0; j < max1; j++) {
+				TParameter m2Par = c2Method.getParametro(j);
+				if (m1Par.getTipo().equals(m2Par.getTipo())
+						|| (m1Par.getTipo().equals(c1Method.getClassName()) && m2Par
+								.getTipo().equals(c2Method.getClassName()))) {
+
+					if (used[j] == 0)
+						used[j] = 1;
+					else if (!repeatedParams.contains(m1Par.getTipo()))
+						repeatedParams.add(m1Par.getTipo());
+				}
+			}
+		}
+
+		return repeatedParams;
+	}
+
+	private Vector getParamSubTypeMatches(TMethod c1Method, TMethod c2Method) {
+		Vector paramMatches = new Vector();
+		int max1 = c1Method.getParametros().size();
+		Vector pMatch = null;
+		if (max1 == c2Method.getParametros().size()) {
+			if (max1 != 0) {
+				for (int j = 0; j < max1; j++) {
+					TParameter m1Par = c1Method.getParametro(j);
+					for (int k = 0; k < max1; k++) {
+						TParameter m2Par = c2Method.getParametro(k);
+						if (m1Par.getTipo().equals(m2Par.getTipo())
+								|| isSubTyping(m1Par.getTipo(), m2Par.getTipo())
+								|| (m1Par.getTipo().equals(
+										c1Method.getClassName()) && m2Par
+										.getTipo().equals(
+												c2Method.getClassName()))) {
+							if (paramMatches.size() < max1)
+								pMatch = new Vector();
+							else
+								pMatch = (Vector) paramMatches.get(k);
+							pMatch.add(j); // indice de m1Par
+							// pMatch.add(m1Par);
+							pMatch.add(k); // indice de m2Par
+							// pMatch.add(m2Par);
+							paramMatches.add(pMatch);
+						}
+					}
+				}
+			}
+		}
+		return paramMatches;
+	}
+
+	// Esta parte todavia hay que revisar bien..
+	// nose todavia como vamos a tratar las excepciones para los Wrappers
+	private Vector getExcepMatches(TMethod c1Method, TMethod c2Method) {
+		Vector excepMatches = new Vector();
+		int max1 = c1Method.getLaunchedExceptions().size();
+		int max2 = c2Method.getLaunchedExceptions().size();
+		if (max1 == max2) {
+			if (max1 != 0) {
+				for (int j = 0; j < max1; j++) {
+					String m1Excep = c1Method.getLaunchedExceptions().get(j)
+							.toString();
+					for (int k = 0; k < max2; k++) {
+						String m2Excep = c2Method.getLaunchedExceptions()
+								.get(k).toString();
+						if (m1Excep.equals(m2Excep)) {// && !used[k])
+							// used[k]=true;
+							Vector exMatch = new Vector();
+							exMatch.add(m1Excep);
+							exMatch.add(m2Excep);
+							excepMatches.add(exMatch);
+						}
+
+					}
+				}
+			}
+			// return allUsed;
+		}
+		return excepMatches;
+	}
+
+	public void log(String msg) {
+		//System.out.println(msg);
+	}
+
+	public void logError(String string) {
+		System.err.println(string);
+	}
+
+	public void setMaximum(int max) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void setPos(int pos) {
+		//System.out.println(pos);
+	}
+
+	public int countWrappers(){
+		//Arma el árbol y cuenta las hojas (wrappers) TOTALES. No genera los wrappers.
+		int nivel=1; // nivel en el arbol de wrappers
+		Arbol a=new Arbol();
+		Enumeration<Vector> e=this.compatibilities.elements();
+		Enumeration<String> k=this.compatibilities.keys();
+		
+		while (e.hasMoreElements()) {
+			Vector v=(Vector) e.nextElement();
+			////System.out.println("Muestra v :");
+			//MuestraElementosVector(v);
+			////System.out.println("FIN_Muestra v, TAMAÑO:"+v.size());
+			String methodSignature=k.nextElement();
+			TMethod c1Method = this.a.findMethodByWholeSignature(methodSignature);
+			if (v!=null && v.size()>0) {
+				Vector oper0=(Vector) v.get(0);
+				////System.out.println("Muestra Oper0:");
+				//MuestraElementosVector(oper0);
+				////System.out.println("FIN_Muestra Oper0:");
+				Integer compat0=(Integer) oper0.get(0); // obtiene el nivel de compatibilidad
+				// en lugar de directamente a.add(), que llame a checkCombinations
+				checkAddCombinations(c1Method,a,oper0,nivel);
+				Vector operI;
+				for (int i=1; i<v.size(); i++) {
+					operI=(Vector) v.get(i);
+					Integer compatI=(Integer) operI.get(0); // obtiene el nivel de compatibilidad
+					if (compat0.intValue()==compatI.intValue()) {
+						checkAddCombinations(c1Method,a,operI,nivel);
+					} else
+						break;
+				}
+				nivel +=1; //aumenta nivel en el arbol
+			}
+		}
+		//asigno arbol a la clase para reutilizarla
+		this.t=a;
+		//asigno cantidad de hojas a la clase para reutilizarla
+		this.cantidadWrappers=a.cntHojas();
+		return this.cantidadWrappers;
+	}
+	
+	public int retornaCntWrappers(){
+		return this.cantidadWrappers;
+	}
+	
+	public String retornaClassPath(){
+		
+		return classPathCandidate;
+	}
+	
+	public String NomPackOriginal(){
+		String cadena = a.getName();
+		return a.getName().substring(0, cadena.indexOf("."));
+	}
+	
+	public void MuestraElementosVector2(Vector v){
+		Enumeration enume=v.elements();
+        while(enume.hasMoreElements()){
+            Vector w = (Vector) enume.nextElement();
+            Enumeration enum2=w.elements();
+            while(enum2.hasMoreElements()){
+            	//System.out.println(enum2.nextElement());
+            }
+        }
+	}
+	
+	public void MuestraElementosVector(Vector v){
+		Enumeration enume=v.elements();
+        while(enume.hasMoreElements()){
+            //System.out.println(enume.nextElement());
+        }
+	}
+	public void MuestraElementosHash(Hashtable h){
+		Enumeration k = h.keys();
+		Enumeration e = h.elements();
+	       
+        while( e. hasMoreElements() ){        
+            //System.out.println("key: "+k.nextElement()+"<--"+e.nextElement());
+        }
+	}
+	public Vector ParmsSubindice(Vector v){
+		Vector sub=new Vector();
+		for (int i=0;i<v.size();i++){
+			TParameter parm=(TParameter) v.get(i);
+			String tipo = parm.getTipo();
+			if (tipo.equals("java.lang.String"))
+				sub.add("s"+i);
+			else
+				sub.add("d"+i);
+		}
+		return sub;
+	}
+	
+	//examp: [[d0,2],[s1,0],[d2,3],[d3,4],[s4,1]]
+	public Vector MapeoParms(TMethod c1Method, TMethod c2Method){
+		Vector mapeo=new Vector();
+		Vector p1=new Vector();
+		Vector p2=new Vector();
+		int max1=c1Method.getParametros().size();
+		//estructura para controlar que c2Method.getParametros() fue leido.
+		boolean leido[]=new boolean[max1];
+		for (int k=0;k<max1;k++){
+			leido[k]=false;
+		}
+		//obtengo los vectores de cada metodo con sus respectivos parámetros	
+		p1=c1Method.getParametros();
+		p2=c2Method.getParametros();
+		for (int i=0;i<max1;i++){
+			TParameter parm1=(TParameter) p1.get(i);
+			for (int j=0;j<p2.size();j++){
+				TParameter parm2=(TParameter) p2.get(j);
+				if (parm1.getTipo().equals(parm2.getTipo()) && (leido[j]==false)){
+					leido[j] = true;
+					Vector elem_mapeo=new Vector();
+					elem_mapeo.add(parm2.getTipo());
+					elem_mapeo.add(j);
+					mapeo.add(elem_mapeo);
+					break;
+				}
+			}
+		}
+		return mapeo;
+	}
+	
+	//devuelve la estructura [[d0,d2,d3],[s1,s4]]
+	public Vector ConjPreComb(TMethod c1Method,Vector repetidos){
+		Vector v = new Vector();
+		Vector parms = (Vector) c1Method.getParametros();
+		int cntParms = parms.size();
+		//Arreglo para controlar si fue leido o no
+		boolean leido[]=new boolean[cntParms];
+		for (int k=0;k<cntParms;k++){
+			leido[k]=false;
+		}
+		//Por cada repetido, armo estructura (para combinacion) recorriendo lista de parms de c1Method
+		for (int k = 0; k < repetidos.size(); k++) {
+			String m1RepPar = (String) repetidos.get(k);
+			Vector elem_comb = new Vector();
+			for (int j=0;j<cntParms;j++){
+					TParameter m1par = (TParameter) parms.get(j);
+					String tipo = m1par.getTipo();
+					if (tipo.equals(m1RepPar) && (leido[j]==false)){
+						leido[j] = true; //lo marco como leido para no reerlo
+						elem_comb.add(tipo+j);
+					}
+						
+			}
+			v.add(elem_comb);//lo agrego como vector al vector de vectores para la combinacion
+			}
+		return v;
+	}
+	public Vector PermutacionesParms(Vector conjPreC,Vector repetidos,Vector mapeo,TMethod c2Method,TMethod c1Method){
+		int pos=0;
+		Vector v=new Vector();
+    	Vector vprevio = new Vector();
+		Enumeration enume=conjPreC.elements();
+        while(enume.hasMoreElements()){
+        	Permutaciones2 p = new Permutaciones2();
+        	Vector pivote = (Vector) enume.nextElement();
+        	p.escribe("", pivote);
+        	p.VecString2VecVec(p.p);
+        	v.add(p.p);
+        }
+        //Realizo la unión de los elementos del vector
+       	Permutaciones2 q = new Permutaciones2();
+        Enumeration enumer=v.elements();
+        while(enumer.hasMoreElements()){
+        	Vector pivot = (Vector) enumer.nextElement(); 
+        	vprevio = q.UnionVectores(vprevio, pivot);
+        }
+        ////System.out.println("vprevio----");
+        //MuestraElementosVector(vprevio);
+        ////System.out.println("---------vprevio----");
+        Vector vfinal = new Vector();
+        for (int i=0;i<vprevio.size();i++){
+         	Vector vprevio_elem=(Vector) vprevio.get(i);
+         	////System.out.println("vprevio_elem");
+         	//MuestraElementosVector(vprevio_elem);
+         	////System.out.println("vprevio_elem____");
+        	Vector vfinal_elem=retornaModelo(c2Method,repetidos,c1Method);
+    		Vector map=mapeo;
+			int cntmap=map.size();
+			boolean leido[]=new boolean[cntmap];
+			for (int b=0;b<cntmap;b++)
+					leido[b]=false;
+
+    		//POR CADA ELEMENTO DEL VECTOR A CONVERTIR DEL FORMATO: [d0,d3,d2,s4,s1]
+    		for (int k=0;k<vprevio_elem.size();k++){
+    				String cad=(String) vprevio_elem.get(k);
+    				//Retorna
+    				String subelem_cad;
+    				String subcad=cad.substring(cad.length()-1);
+    				String subcad2=cad.substring(0,cad.length()-1);
+
+    				 for (int ix=0;ix<map.size();ix++){
+    			        	TParameter elem = (TParameter) map.get(ix); //recupero s1 del formato [s1,3]
+    			        	String elem_tipo=elem.getTipo();
+    			        	
+    			        	if ((subcad2.equals(elem_tipo)) && (leido[ix]==false)){
+    			        		pos = ix;
+    			        		leido[ix]=true;
+    			            	break;
+    			            }
+    						
+    			        }
+	        		vfinal_elem.removeElementAt(pos);
+	        		int entero = Integer.parseInt (subcad);
+	    			vfinal_elem.insertElementAt(entero, pos);
+    				 //FIN retorno
+    		////System.out.println("cad: "+cad);		 
+    		}
+    		////System.out.println("vfinal_elem");
+         	//MuestraElementosVector(vfinal_elem);
+         	////System.out.println("vfinal_elem____");
+    		vfinal.add(vfinal_elem);
+    	}
+		return vfinal;
+	}
+
+	
+	public Vector retornaModelo(TMethod c2Method, Vector repetidos,TMethod c1Method){
+		Vector v=new Vector();
+		int i,cntParms=c2Method.getParametros().size();
+		//Relleno con vacios 
+		for (i=0;i<cntParms;i++){
+			v.insertElementAt(" ", i);
+		}
+		Vector parm = (Vector) c2Method.getParametros();
+		for (i=0;i<repetidos.size();i++){
+			String tipo = (String) repetidos.get(i);
+			for (int j=0;j<cntParms;j++){
+				
+				TParameter parametro = (TParameter) parm.get(j);
+				String tipo2 = parametro.getTipo();
+				if ((tipo2.equals(tipo))){
+				}
+				else{
+					v.removeElementAt(j);
+					v.insertElementAt(posTipoC1Method(tipo2,c1Method), j);
+				}
+			}
+		}
+		//System.out.println("INICIO retorna Modelo");
+		MuestraElementosVector(v);
+		//System.out.println("FIN retorna Modelo");
+		return v;
+	}
+	
+	private Integer posTipoC1Method(String tipo,TMethod method) {
+		int posicion = -1;
+		Vector args = (Vector) method.getParametros();
+		for(int i=0; i<args.size();i++){
+			TParameter parm = (TParameter) args.get(i); 
+			if (tipo.equals(parm.getTipo())){
+				posicion = i;
+				break;
+			}
+		}
+		return posicion;
+	}
+
+	public void setParentJFBuilderWindows(JFBuildWrappers parentWindows){
+		this.jfBuildWindows = parentWindows;
+	}
+	
+	
+} // Fin de Clase
+

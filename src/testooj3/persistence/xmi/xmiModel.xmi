@@ -1,0 +1,121 @@
+<xmi:XMI xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:model="http://www.omg.org/MOF1.3">
+  <model:Package xmi:id="MOF" name="MOF" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false">
+    <contents xmi:type="model:Class" xmi:id="RefBaseObject" name="RefBaseObject" annotation="" visibility="public_vis" isAbstract="true" isRoot="false" isLeaf="false" isSingleton="false"/>
+  </model:Package>
+  <model:Package xmi:id="XMIPackage" name="XMIPackage" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false">
+    <contents xmi:type="model:Tag" xmi:id="Tag_1" tagId="org.omg.xmi.nsURI" values="http://www.omg.org/XMI"/>
+    <contents xmi:type="model:Tag" xmi:id="Tag_2" tagId="org.omg.xmi.nsPrefix" values="xmi"/>
+    <contents xmi:type="model:Tag" xmi:id="Tag_3" tagId="org.omg.xmi.superClassFirst" values="true"/>
+    <contents xmi:type="model:Tag" xmi:id="Tag_4" tagId="org.omg.xmi.useSchemaExtension" values="true"/>
+    <contents xmi:type="model:Class" xmi:id="Difference" name="Difference" annotation="" visibility="public_vis" isAbstract="true" isRoot="false" isLeaf="false" isSingleton="false">
+      <contents xmi:type="model:Reference" xmi:id="difference_26" name="difference" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" exposedEnd="container_31" referencedEnd="difference_25">
+        <multiplicity xmi:id="MultiplicityType_1" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+      <contents xmi:type="model:Reference" xmi:id="container_32" name="container" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" exposedEnd="difference_25" referencedEnd="container_31">
+        <multiplicity xmi:id="MultiplicityType_2" lower="0" upper="1" isOrdered="false" isUnique="true"/>
+      </contents>
+      <contents xmi:type="model:Reference" xmi:id="target_34" name="target" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" exposedEnd="difference_24" referencedEnd="target_33">
+        <multiplicity xmi:id="MultiplicityType_3" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Class" xmi:id="Add" name="Add" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false" isSingleton="false" supertypes="Difference">
+      <contents xmi:type="model:Attribute" xmi:id="position_0" name="position" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="Integer_21">
+        <multiplicity xmi:id="MultiplicityType_4" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Reference" xmi:id="addition_28" name="addition" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" exposedEnd="add_23" referencedEnd="addition_27">
+        <multiplicity xmi:id="MultiplicityType_5" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Class" xmi:id="Replace" name="Replace" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false" isSingleton="false" supertypes="Difference">
+      <contents xmi:type="model:Attribute" xmi:id="position_1" name="position" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="Integer_21">
+        <multiplicity xmi:id="MultiplicityType_6" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Reference" xmi:id="replacement_30" name="replacement" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" exposedEnd="replace_22" referencedEnd="replacement_29">
+        <multiplicity xmi:id="MultiplicityType_7" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Class" xmi:id="Delete" name="Delete" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false" isSingleton="false" supertypes="Difference"/>
+    <contents xmi:type="model:Class" xmi:id="XMI" name="XMI" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false" isSingleton="false">
+      <contents xmi:type="model:Tag" xmi:id="Tag_10" tagId="org.omg.xmi.contentType" values="any"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_11" tagId="org.omg.xmi.form" values="qualified" elements="version_2"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_12" tagId="org.omg.xmi.fixedValue" values="2.0" elements="version_2"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_13" tagId="org.omg.xmi.attribute" values="true" elements="version_2"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_14" tagId="org.omg.xmi.enforceMinimumMultiplicty" values="true" elements="version_2"/>
+      <contents xmi:type="model:Attribute" xmi:id="version_2" name="version" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_8" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="documentation_6" name="documentation" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="Documentation">
+        <multiplicity xmi:id="MultiplicityType_12" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="difference_7" name="difference" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="Difference">
+        <multiplicity xmi:id="MultiplicityType_13" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="extension_8" name="extension" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="Extension">
+        <multiplicity xmi:id="MultiplicityType_14" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Class" xmi:id="Documentation" name="Documentation" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false" isSingleton="false">
+      <contents xmi:type="model:Attribute" xmi:id="contact_11" name="contact" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_17" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="exporter_12" name="exporter" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_18" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="exporterVersion_13" name="exporterVersion" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_19" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="longDescription_14" name="longDescription" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_20" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="shortDescription_15" name="shortDescription" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_21" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="notice_16" name="notice" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_22" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="owner_17" name="owner" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_23" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Class" xmi:id="Extension" name="Extension" annotation="" visibility="public_vis" isAbstract="false" isRoot="false" isLeaf="false" isSingleton="false">
+      <contents xmi:type="model:Tag" xmi:id="Tag_5" tagId="org.omg.xmi.contentType" values="any"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_6" tagId="org.omg.xmi.processContents" values="lax"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_7" tagId="org.omg.xmi.attribute" values="true" elements="extenderID_19"/>
+      <contents xmi:type="model:Tag" xmi:id="Tag_8" tagId="org.omg.xmi.attribute" values="true" elements="extender_18"/>
+      <contents xmi:type="model:Attribute" xmi:id="extender_18" name="extender" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_24" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+      <contents xmi:type="model:Attribute" xmi:id="extenderID_19" name="extenderID" annotation="" scope="instance_level" visibility="public_vis" isChangeable="true" isDerived="false" type="String_20">
+        <multiplicity xmi:id="MultiplicityType_25" lower="1" upper="1" isOrdered="false" isUnique="false"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Association" xmi:id="Difference_Difference_35" name="Difference_Difference" annotation="" isAbstract="false" isRoot="false" isLeaf="false" isDerived="false">
+      <contents xmi:type="model:AssociationEnd" xmi:id="container_31" name="container" isNavigable="true" aggregation="composite" isChangeable="true" type="Difference">
+        <multiplicity xmi:id="MultiplicityType_26" lower="0" upper="1" isOrdered="false" isUnique="true"/>
+      </contents>
+      <contents xmi:type="model:AssociationEnd" xmi:id="difference_25" name="difference" isNavigable="true" aggregation="none" isChangeable="true" type="Difference">
+        <multiplicity xmi:id="MultiplicityType_27" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+    </contents>
+    <contents xmi:type="model:Association" xmi:id="RefBaseObject_Difference_36" name="RefBaseObject_Difference" annotation="" isAbstract="false" isRoot="false" isLeaf="false" isDerived="false">
+      <contents xmi:type="model:AssociationEnd" xmi:id="target_33" name="target" isNavigable="true" aggregation="none" isChangeable="true" type="RefBaseObject">
+        <multiplicity xmi:id="MultiplicityType_28" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+      <contents xmi:type="model:AssociationEnd" xmi:id="difference_24" name="difference" isNavigable="false" aggregation="none" isChangeable="true" type="Difference"/>
+    </contents>
+    <contents xmi:type="model:Association" xmi:id="RefBaseObject_Add_37" name="RefBaseObject_Add" annotation="" isAbstract="false" isRoot="false" isLeaf="false" isDerived="false">
+      <contents xmi:type="model:AssociationEnd" xmi:id="addition_27" name="addition" isNavigable="true" aggregation="none" isChangeable="true" type="RefBaseObject">
+        <multiplicity xmi:id="MultiplicityType_29" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+      <contents xmi:type="model:AssociationEnd" xmi:id="add_23" name="add" isNavigable="false" aggregation="none" isChangeable="true" type="Add"/>
+    </contents>
+    <contents xmi:type="model:Association" xmi:id="RefBaseObject_Replace_38" name="RefBaseObject_Replace" annotation="" isAbstract="false" isRoot="false" isLeaf="false" isDerived="false">
+      <contents xmi:type="model:AssociationEnd" xmi:id="replacement_29" name="replacement" isNavigable="true" aggregation="none" isChangeable="true" type="RefBaseObject">
+        <multiplicity xmi:id="MultiplicityType_30" lower="0" upper="-1" isOrdered="false" isUnique="true"/>
+      </contents>
+      <contents xmi:type="model:AssociationEnd" xmi:id="replace_22" name="replace" isNavigable="false" aggregation="none" isChangeable="true" type="Replace"/>
+    </contents>
+    <contents xmi:type="model:DataType" xmi:id="String_20" name="String"/>
+    <contents xmi:type="model:DataType" xmi:id="Integer_21" name="Integer"/>
+  </model:Package>
+</xmi:XMI>

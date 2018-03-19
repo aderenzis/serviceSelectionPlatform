@@ -1,0 +1,3 @@
+generate test case state machine
+
+Genera casos de prueba a partir de una máquina de estados. 

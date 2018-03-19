@@ -1,0 +1,753 @@
+package testooj3.gui.compatibility;
+
+
+import java.awt.GridBagLayout;
+import java.awt.HeadlessException;
+
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+
+
+import java.awt.GridBagConstraints;
+import java.awt.Dimension;
+import java.awt.event.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import testooj3.compatibility.InterfacesCompatibilityChecker;
+import javax.swing.JComboBox;
+import java.awt.Insets;
+import javax.swing.JRadioButton;
+
+
+
+
+public class JFBuildWrappers extends JFrame{
+	
+	
+	
+	private static final long serialVersionUID = 1L;
+	private JPanel jPanel = null;
+	private JPanel jContentPane = null;
+	private JPanel panelOpciones = null;
+//	private JLabel txtTitOp = new JLabel("Seleccione una opci�n:");
+	private JLabel txtcntgen = new JLabel("Estimate Size of Wrappers Set :");
+	private JLabel txtGentodo = new JLabel("1 - Generar Todo");
+	private JTextField cntbloque = null;
+
+	private JTextField jcantgenerada = null;
+	private JTextField jTextDde = null;
+	private JTextField jTextHta = null; 
+	
+	private JTextArea textArea;
+	private JLabel jTxtHasta = null;
+	private JButton jButVerWrapper = null;
+	
+	private InterfacesCompatibilityChecker ich;  //  @jve:decl-index=0:
+	private JComboBox jTipoWrapper = null;
+	private JScrollPane jEditorPane = null;
+	private JTextField jwtpPath = null;
+	private JButton jSelWtpPath = null;
+	private JButton jButton = null;
+	private JPanel jPanelCenter = null;
+	private JButton jbBuildFile = null;
+	private JRadioButton jrbAllWrappers = null;
+	private JRadioButton jrbBuildBlocks = null;
+	private JRadioButton jrbBuildFromTo = null;
+	
+	
+	
+	public JFBuildWrappers(InterfacesCompatibilityChecker ichk) throws HeadlessException
+	{
+		super();
+		initialize(ichk);
+		ButtonGroup grupo=new ButtonGroup();
+		grupo.add(this.jrbAllWrappers);
+		grupo.add(this.jrbBuildBlocks);
+		grupo.add(this.jrbBuildFromTo);
+		
+	
+	}
+	
+	private void initialize(InterfacesCompatibilityChecker ichk)
+	{
+		
+		txtGentodo.setText("Setting Wrappers Amount");
+//		txtTitOp.setText("Type of Wrappers");
+		this.ich = ichk;
+		//ich.buildWrappers();
+		int counter=this.ich.countWrappers();
+		
+		
+		this.setSize(600, 500);
+		this.setContentPane(getJPanel());
+		this.setTitle(" Behaviour Compatibility");
+		
+	}
+
+	
+
+
+	/**
+	 * This method initializes jPanel	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel() {
+		if (jPanel == null) {
+			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
+			gridBagConstraints3.gridx = 1;
+			gridBagConstraints3.fill = GridBagConstraints.BOTH;
+			gridBagConstraints3.gridy = 3;
+			GridBagConstraints gridBagConstraints9 = new GridBagConstraints();
+			gridBagConstraints9.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints9.gridy = 5;
+			gridBagConstraints9.weightx = 1.0;
+			gridBagConstraints9.weighty = 1.0;
+			gridBagConstraints9.gridx = 1;
+			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
+			gridBagConstraints5.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints5.gridy = 4;
+			gridBagConstraints5.weightx = 0.0;
+			gridBagConstraints5.weighty = 1.0;
+			gridBagConstraints5.gridx = 0;
+			jPanel = new JPanel();
+			jPanel.setLayout(new GridBagLayout());
+			GridBagConstraints grid1 = new GridBagConstraints();
+			grid1.gridx=0;
+			grid1.insets = new Insets(0, 0, 0, 0);
+			grid1.gridy=1;
+			grid1.gridwidth = 0;
+			grid1.gridheight = 2;
+			grid1.weightx=1.0;
+			grid1.fill = GridBagConstraints.NONE;
+			grid1.anchor = GridBagConstraints.CENTER;
+			grid1.weighty=0.0;
+			GridBagConstraints grid2 = new GridBagConstraints();
+			grid2.gridx=0;
+			grid2.gridy=1;
+			grid2.gridwidth=2;
+			grid2.gridheight=3;
+			grid2.weightx = 0.0;
+			grid2.fill = GridBagConstraints.BOTH;
+			grid2.ipadx = 0;
+			grid2.anchor = GridBagConstraints.SOUTH;
+			grid2.anchor = GridBagConstraints.SOUTH;
+			grid2.weighty = 1.0;
+			jPanel.add(getJContentPane(), grid1);
+			jPanel.add(getJEditorPane2(), gridBagConstraints9);
+			jPanel.add(getPanelOpciones(), gridBagConstraints3);
+		}
+		return jPanel;
+	}
+	
+			
+
+	private JPanel getJContentPane() 
+	{
+		if (jContentPane == null) {
+			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
+			gridBagConstraints8.fill = GridBagConstraints.VERTICAL;
+			gridBagConstraints8.gridy = 1;
+			gridBagConstraints8.weightx = 1.0;
+			gridBagConstraints8.gridx = 4;
+			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
+			gridBagConstraints4.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints4.gridy = 0;
+			gridBagConstraints4.weightx = 1.0;
+			gridBagConstraints4.gridwidth = 2;
+			gridBagConstraints4.gridx = 2;
+			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
+			gridBagConstraints2.gridx = 2;
+			gridBagConstraints2.gridy = 0;
+			jContentPane = new JPanel();                           //Note 2
+	        jContentPane.setLayout(new GridBagLayout());
+	        GridBagConstraints grid2 = new GridBagConstraints();
+	        grid2.gridx = 0;
+	        grid2.gridy = 0;
+	        grid2.gridwidth = 2;
+	        grid2.anchor = GridBagConstraints.WEST;
+	        grid2.gridheight = 1;
+	        GridBagConstraints grid21 = new GridBagConstraints();
+	        grid21.gridx = 2;
+	        grid21.gridy = 0;
+	        grid21.gridwidth = 1;
+	        grid21.gridheight = 1;
+	        GridBagConstraints grid23 = new GridBagConstraints();
+	        grid23.gridx = 4;
+	        grid23.gridy = 0;
+	        grid23.gridwidth = 1;
+	        grid23.gridheight = 1;
+	        //JLabel txtWrapper = new JLabel ("Wrappers");
+	        jContentPane.add(txtcntgen, grid2);
+	        
+	        //jContentPane.add(txtCboSvc_Comp, grid23);
+	        //jContentPane.add(getJcntbloque(), gridBagConstraints2);
+	        jContentPane.add(getJcantgenerada(), gridBagConstraints4);
+	 }
+		return jContentPane;		
+	}
+	
+	
+	
+	/**
+	 * This method initializes panelOpciones	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getPanelOpciones() {
+		if (panelOpciones == null) {
+			GridBagConstraints gridBagConstraints13 = new GridBagConstraints();
+			gridBagConstraints13.insets = new Insets(0, 39, 0, 0);
+			gridBagConstraints13.gridy = 7;
+			gridBagConstraints13.gridx = 7;
+			GridBagConstraints gridBagConstraints25 = new GridBagConstraints();
+			gridBagConstraints25.gridx = 6;
+			gridBagConstraints25.gridy = 1;
+			GridBagConstraints gridBagConstraints111 = new GridBagConstraints();
+			gridBagConstraints111.gridx = 1;
+			gridBagConstraints111.gridy = 6;
+			GridBagConstraints gridBagConstraints110 = new GridBagConstraints();
+			gridBagConstraints110.gridx = 2;
+			gridBagConstraints110.gridy = 4;
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridy = 5;
+			GridBagConstraints gridBagConstraints33 = new GridBagConstraints();
+			gridBagConstraints33.gridx = 1;
+			gridBagConstraints33.gridwidth = 3;
+			gridBagConstraints33.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints33.gridy = 7;
+			GridBagConstraints gridBagConstraints24 = new GridBagConstraints();
+			gridBagConstraints24.gridx = 1;
+			gridBagConstraints24.gridy = 4;
+			GridBagConstraints gridBagConstraints19 = new GridBagConstraints();
+			gridBagConstraints19.gridx = 5;
+			gridBagConstraints19.gridy = 5;
+			GridBagConstraints gridBagConstraints18 = new GridBagConstraints();
+			gridBagConstraints18.gridx = 0;
+			gridBagConstraints18.anchor = GridBagConstraints.WEST;
+			gridBagConstraints18.gridy = 6;
+			GridBagConstraints gridBagConstraints23 = new GridBagConstraints();
+			gridBagConstraints23.gridx = 5;
+			gridBagConstraints23.anchor = GridBagConstraints.WEST;
+			gridBagConstraints23.gridy = 6;
+			gridBagConstraints23.gridwidth=3;
+			GridBagConstraints gridBagConstraints17 = new GridBagConstraints();
+			gridBagConstraints17.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints17.gridy = 6;
+			gridBagConstraints17.weightx = 1.0;
+			gridBagConstraints17.gridwidth = 3;
+			gridBagConstraints17.gridx = 1;
+			GridBagConstraints gridBagConstraints15 = new GridBagConstraints();
+			gridBagConstraints15.gridx = 0;
+			gridBagConstraints15.gridy = 0;
+			GridBagConstraints gridBagConstraints14 = new GridBagConstraints();
+			gridBagConstraints14.gridx = 2;
+			gridBagConstraints14.gridy = 9;
+			jTxtHasta = new JLabel();
+			jTxtHasta.setText("To");
+			GridBagConstraints gridBagConstraints41 = new GridBagConstraints();
+			gridBagConstraints41.gridx = 5;
+			gridBagConstraints41.gridy = 9;
+			GridBagConstraints gridBagConstraints31 = new GridBagConstraints();
+			gridBagConstraints31.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints31.gridy = 9;
+			gridBagConstraints31.weightx = 1.0;
+			gridBagConstraints31.gridx = 3;
+			GridBagConstraints gridBagConstraints22 = new GridBagConstraints();
+			gridBagConstraints22.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints22.gridy = 9;
+			gridBagConstraints22.weightx = 1.0;
+			gridBagConstraints22.gridx = 1;
+			GridBagConstraints gridBagConstraints21 = new GridBagConstraints();
+			gridBagConstraints21.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints21.gridy = 8;
+			gridBagConstraints21.weightx = 1.0;
+			gridBagConstraints21.anchor = GridBagConstraints.EAST;
+			gridBagConstraints21.gridwidth = 2;
+			gridBagConstraints21.gridx = 1;
+			GridBagConstraints gridBagConstraints12 = new GridBagConstraints();
+			gridBagConstraints12.gridx = 5;
+			gridBagConstraints12.gridy = 8;
+			GridBagConstraints gridBagConstraints11 = new GridBagConstraints();
+			gridBagConstraints11.gridx = 3;
+			gridBagConstraints11.gridy = 2;
+			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
+			gridBagConstraints1.gridx = 2;
+			gridBagConstraints1.gridy = 2;
+			panelOpciones = new JPanel();
+			panelOpciones.setLayout(new GridBagLayout());
+			GridBagConstraints pogrid1 = new GridBagConstraints();
+			pogrid1.gridx = 0;
+			pogrid1.gridy = 4;
+			pogrid1.gridwidth=2;
+			pogrid1.anchor = GridBagConstraints.WEST;
+			pogrid1.gridheight=1;
+			
+			GridBagConstraints pogrid2 = new GridBagConstraints();
+			pogrid2.gridx = 3;
+			pogrid2.gridy = 4;
+			
+			pogrid2.anchor = GridBagConstraints.WEST;
+			//
+			
+			GridBagConstraints grid21 = new GridBagConstraints();
+			grid21.gridx=2; //columna
+			grid21.gridy=1; //Fila
+			GridBagConstraints grid22 = new GridBagConstraints();
+			grid22.gridx = 0; //columna
+			grid22.gridy = 2; //Fila
+//			panelOpciones.add(txtTitOp, pogrid1);
+			
+			panelOpciones.add(getJwtpPath(), gridBagConstraints17);
+			panelOpciones.add(getJSelWtpPath(), gridBagConstraints23);
+			panelOpciones.add(getJButton(), gridBagConstraints18);
+			panelOpciones.add(getJPanelCenter(), gridBagConstraints33);
+//			panelOpciones.add(getJTipoWrapper(), pogrid2);
+			panelOpciones.add(getJPanel1(), gridBagConstraints25);
+			panelOpciones.add(getJButVerWrapper(), gridBagConstraints13);
+			
+			
+			
+
+			
+			//panelOpciones.add(getJGenBloque(), gridBagConstraints1);
+		}
+		return panelOpciones;
+	}
+	private JTextField getJcntbloque() {
+		if (cntbloque == null) {
+			cntbloque = new JTextField();
+			cntbloque.setText("4");
+			cntbloque.setEditable(true);
+	
+		}
+		return cntbloque;
+	}
+	
+		
+	Runnable showModalDialog = new Runnable() {
+        public void run() {
+        	ich.buildWrappers(0,0,"S",jwtpPath.getText(),jwtpPath.getText());  //  @jve:decl-index=0:
+        }
+    };
+	private JPanel jPanel1 = null;
+	
+	
+	/**
+	 * This method initializes jcantgenerada	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJcantgenerada() {
+			int cantWrappers=0;
+		if (jcantgenerada == null) {
+			jcantgenerada = new JTextField();
+			cantWrappers=this.ich.retornaCntWrappers();
+			jcantgenerada.setText(String.valueOf(cantWrappers));
+			jcantgenerada.setPreferredSize(new java.awt.Dimension(20,20));
+			jcantgenerada.setEditable(true);
+		}
+		return jcantgenerada;
+	}
+	/**
+	 * This method initializes jTextDde	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextDde() {
+		if (jTextDde == null) {
+			jTextDde = new JTextField();
+			jTextDde.setText("0");
+		}
+		return jTextDde;
+	}
+	/**
+	 * This method initializes jTextHta	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextHta() {
+		int cantWrappers = 0;
+		if (jTextHta == null) {
+			jTextHta = new JTextField();
+			jTextHta.setText("0");
+			cantWrappers=this.ich.retornaCntWrappers();
+			jTextHta.setText(String.valueOf(cantWrappers));
+		}
+		return jTextHta;
+	}
+	public void logClean(String msg) {
+        /*jEditorPane.setText("");
+        jEditorPane.select(0, 0);
+		jEditorPane.setText(msg);*/
+    }
+	public void logMsg(String msg) {
+		textArea.append(msg + "\n");
+        textArea.setCaretPosition(textArea.getDocument().getLength());		
+
+		
+    }
+	public void logError(String msg) {
+
+    }
+	/**
+	 * This method initializes jButVerWrapper	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJButVerWrapper() {
+		if (jButVerWrapper == null) {
+			jButVerWrapper = new JButton();
+			jButVerWrapper.setText("View Built Wrappers");
+			jButVerWrapper.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					JDisplayWrappers verWrappers = new JDisplayWrappers(ich);
+					System.out.println("retornaClassPath: "+ich.retornaClassPath());
+					verWrappers.setVisible(true);
+				}
+			});
+		}
+		return jButVerWrapper;
+	}
+	/**
+	 * This method initializes jTipoWrapper	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getJTipoWrapper() {
+		if (jTipoWrapper == null) {
+			String[] lista={" for Components Or for Services","For Services","For Components"};
+			jTipoWrapper = new JComboBox(lista);
+			jTipoWrapper.addItemListener(new ItemListener(){
+				  public void itemStateChanged(ItemEvent ie){
+					  if (ie.getStateChange() == 1) {
+						  		logClean("");
+						  		logMsg("Wrappers are generated "+ie.getItem()+" ");
+					  	}
+				  }
+				  });
+			
+		}
+		return jTipoWrapper;
+	}
+	/**
+	 * This method initializes jEditorPane	
+	 * 	
+	 * @return javax.swing.JEditorPane	
+	 */
+	
+
+	private JScrollPane getJEditorPane2() {
+		if (jEditorPane == null) {
+			textArea = new JTextArea(5, 30);
+			jEditorPane = new  JScrollPane(textArea);
+			setPreferredSize(new Dimension(450, 110));
+		}
+		return jEditorPane;
+	}
+	
+	/**
+	 * This method initializes jwtpPath	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJwtpPath() {
+		if (jwtpPath == null) {
+			jwtpPath = new JTextField();
+
+			jwtpPath.setMinimumSize(new java.awt.Dimension(100,20));
+		}
+		return jwtpPath;
+	}//
+	/**
+	 * This method initializes jSelWtpPath	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJSelWtpPath() {
+		if (jSelWtpPath == null) {
+			jSelWtpPath = new JButton();
+			jSelWtpPath.setText("Build Proxy");
+
+			jSelWtpPath.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					String args[]={"c:\\proyecto",jwtpPath.getText(),""};
+					try {
+						logError("jwtpPath.toString(): "+jwtpPath.getText());
+						generaCliente(args);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
+		}
+		return jSelWtpPath;
+	}
+	protected void classPath(JTextField campo) {
+		JFileChooser fc=new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int returnVal=fc.showOpenDialog(this);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+        	String result=fc.getSelectedFile().getAbsolutePath()+ ""+ jwtpPath.getText();
+
+       		campo.setText(result);
+        }
+	}
+	
+	public void generaCliente( String[] args ) throws IOException
+    {
+		String pathtoDeploy = args[0];
+		String pathToWSDL=args[1];
+		String packageName=args[2];
+		 pb;
+		if (packageName.equals(""))
+			 pb = new ("wsdl2java.bat","-o",pathtoDeploy,"-uri",pathToWSDL);			
+		else
+			 pb = new ("wsdl2java.bat","-p",packageName,"-o",pathtoDeploy,"-uri",pathToWSDL);
+		//Map<String, String> env = pb.environment();
+		//env.put("PATH", "c:\\proyecto\\");
+		Process p = pb.start();
+		try {
+			this.writeProcessOutput(p);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		p.destroy();
+    }
+
+	private void writeProcessOutput(Process process) throws Exception{
+	  InputStreamReader tempReader = new InputStreamReader(
+	      new BufferedInputStream(process.getInputStream()));
+	  BufferedReader reader = new BufferedReader(tempReader);
+	  while (true){
+	      String line = reader.readLine();
+	      if (line == null)
+	          break;
+
+	      logMsg(line);
+	  }		
+	}
+
+	private JButton getJButton() {
+		if (jButton == null) {
+			jButton = new JButton();
+			jButton.setText("Class Path WSDL");
+			jButton.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					classPath(jwtpPath);
+				}
+			});
+		}
+		return jButton;
+	}
+	/**
+	 * This method initializes jRadioButton	
+	 * 	
+	 * @return javax.swing.JRadioButton	
+	 */
+	
+	/**
+	 * This method initializes radioGenera	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	
+	/**
+	 * This method initializes jPanelCenter	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanelCenter() {
+		if (jPanelCenter == null) {
+			GridBagConstraints gridBagConstraints7 = new GridBagConstraints();
+			gridBagConstraints7.gridx = 0;
+			gridBagConstraints7.gridwidth = 3;
+			gridBagConstraints7.anchor = GridBagConstraints.NORTHWEST;
+			gridBagConstraints7.gridy = 2;
+			GridBagConstraints gridBagConstraints311 = new GridBagConstraints();
+			gridBagConstraints311.anchor = GridBagConstraints.WEST;
+			gridBagConstraints311.gridy = 7;
+			gridBagConstraints311.gridx = 0;
+			GridBagConstraints gridBagConstraints312 = new GridBagConstraints();
+			gridBagConstraints312.anchor = GridBagConstraints.WEST;
+			gridBagConstraints312.gridy = 7;
+			gridBagConstraints312.gridx = 1;
+			GridBagConstraints gridBagConstraints313 = new GridBagConstraints();
+			gridBagConstraints313.anchor = GridBagConstraints.WEST;
+			gridBagConstraints313.gridy = 7;
+			gridBagConstraints313.gridx = 2;
+			GridBagConstraints gridBagConstraints314 = new GridBagConstraints();
+			gridBagConstraints314.anchor = GridBagConstraints.CENTER;
+			gridBagConstraints314.gridy = 7;
+			gridBagConstraints314.gridwidth = 2;
+			gridBagConstraints314.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints314.gridx = 3;
+			GridBagConstraints gridBagConstraints211 = new GridBagConstraints();
+			gridBagConstraints211.anchor = GridBagConstraints.WEST;
+			gridBagConstraints211.gridy = 6;
+			gridBagConstraints211.gridx = 0;
+			GridBagConstraints gridBagConstraints212 = new GridBagConstraints();
+			gridBagConstraints212.anchor = GridBagConstraints.WEST;
+			gridBagConstraints212.gridy = 6;
+			gridBagConstraints212.gridwidth = 2;
+			gridBagConstraints212.gridx = 1;
+			GridBagConstraints gridBagConstraints171 = new GridBagConstraints();
+			gridBagConstraints171.anchor = GridBagConstraints.WEST;
+			gridBagConstraints171.gridy = 5;
+			gridBagConstraints171.gridwidth = 3;
+			gridBagConstraints171.gridx = 0;
+			GridBagConstraints gridBagConstraints91 = new GridBagConstraints();
+			gridBagConstraints91.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints91.gridwidth = 5;
+			gridBagConstraints91.gridx = 0;
+			gridBagConstraints91.gridy = 9;
+			jPanelCenter = new JPanel();
+			jPanelCenter.setLayout(new GridBagLayout());
+			jPanelCenter.add(getJbBuildFile(), gridBagConstraints91);
+			
+			jPanelCenter.add(getJrbBuildJunitFile(), gridBagConstraints171);
+			jPanelCenter.add(getJrbBuildMuJavaFile(), gridBagConstraints211);
+			jPanelCenter.add(getJrbBuildBothFiles(), gridBagConstraints311);
+			jPanelCenter.add(getJcntbloque(), gridBagConstraints212);
+			jPanelCenter.add(getJTextDde(),gridBagConstraints312);
+			jPanelCenter.add(jTxtHasta,gridBagConstraints313);
+			jPanelCenter.add(getJTextHta(), gridBagConstraints314);
+			jPanelCenter.add(txtGentodo, gridBagConstraints7);
+		}
+		return jPanelCenter;
+	}
+	/**
+	 * This method initializes jbBuildFile	
+	 * 	
+	 * @return javax.swing.JButton	
+	 */
+	private JButton getJbBuildFile() {
+		if (jbBuildFile == null) {
+			jbBuildFile = new JButton();
+			jbBuildFile.setText("Build Wrappers");
+			jbBuildFile.setVisible(true);
+			jbBuildFile.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+//					String nombre=(String) jTipoWrapper.getSelectedItem();
+//					String tipoW="C"; //Por defecto queda como componente
+//
+//					if ((nombre.equals("For Services"))) 
+//						tipoW="S";
+//					else
+//						tipoW="C";
+					if (jrbAllWrappers.isSelected()){
+						
+//						if ((nombre.equals("For Services")) || (nombre.equals("For Components"))){
+							ich.buildWrappers(0,0,"S","C:\\proyecto\\src",jwtpPath.getText());
+							String msg = "Generated " +ich.retornaCntWrappers()+" wrappers successfully!";
+							logError(msg);
+							System.out.println(msg);
+//						}
+//						else{
+//							System.out.println("You must select type of wrapper to generate, verify");
+//							logError("You must select type of wrapper to generate, verify");
+//						} //rtr		
+					}
+					else{
+						if (jrbBuildBlocks.isSelected()){
+							int valor=Integer.parseInt(cntbloque.getText());
+							String nombre2=(String) jTipoWrapper.getSelectedItem();
+							if (nombre2.equals("For Services")) {
+//								ich.buildWrappers(valor,0,nombre,jwtpPath.getText(),jwtpPath.getText());
+							}
+						}
+						else{
+							if (jrbBuildFromTo.isSelected()){
+								// Genera por rango Desde Hasta
+								int desde=Integer.parseInt(jTextDde.getText());
+								int hasta=Integer.parseInt(jTextHta.getText());
+								String nombre2=(String) jTipoWrapper.getSelectedItem();
+								if ((nombre2.equals("Como servicios")) || (nombre2.equals("Como Componentes"))) {						
+//									ich.buildWrappers(desde, hasta,nombre,jwtpPath.getText(),jwtpPath.getText()); 
+								}
+							}
+							else{
+								String nombre2=(String) jTipoWrapper.getSelectedItem();
+								if ((!nombre2.equals("For Services")) && (!nombre2.equals("For Components"))){
+									logMsg("You must select type of wrapper to generate, verify");
+									}
+							}
+						}
+					}
+				}
+			});
+		}
+		return jbBuildFile;
+	}
+	/**
+	 * This method initializes jrbBuildJunitFile	
+	 * 	
+	 * @return javax.swing.JRadioButton	
+	 */
+	private JRadioButton getJrbBuildJunitFile() {
+		if (jrbAllWrappers == null) {
+			jrbAllWrappers = new JRadioButton();
+			jrbAllWrappers.setSelected(true);
+			jrbAllWrappers.setText("All Wrappers");
+		}
+		return jrbAllWrappers;
+	}
+	/**
+	 * This method initializes jrbBuildMuJavaFile	
+	 * 	
+	 * @return javax.swing.JRadioButton	
+	 */
+	private JRadioButton getJrbBuildMuJavaFile() {
+		if (jrbBuildBlocks == null) {
+			jrbBuildBlocks = new JRadioButton();
+			jrbBuildBlocks.setText("Wrappers Blocks of");
+		}
+		return jrbBuildBlocks;
+	}
+	/**
+	 * This method initializes jrbBuildBothFiles	
+	 * 	
+	 * @return javax.swing.JRadioButton	
+	 */
+	private JRadioButton getJrbBuildBothFiles() {
+		if (jrbBuildFromTo == null) {
+			jrbBuildFromTo = new JRadioButton();
+			jrbBuildFromTo.setText("Wrappers From");
+		}
+		return jrbBuildFromTo;
+	}
+
+	/**
+	 * This method initializes jPanel1	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanel1() {
+		if (jPanel1 == null) {
+			jPanel1 = new JPanel();
+			jPanel1.setLayout(new GridBagLayout());
+		}
+		return jPanel1;
+	}
+
+	/**
+	 * This method initializes jPanel1	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	
+}  //  @jve:decl-index=0:visual-constraint="234,25"

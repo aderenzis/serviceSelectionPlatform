@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmlns:xmi="http://schema.omg.org/spec/XMI/2.1" xmlns:uml="http://schema.omg.org/spec/UML/2.0" xmi:version="2.1">
+	<xmi:Documentation contact="www.altova.com" exporter="Altova UModel2007" exporterVersion="2.2"/>
+	<uml:Package xmi:id="U00000001-7510-11d9-86f2-000476a22f44" xmi:uuid="00000001-7510-11d9-86f2-000476a22f44" name="Root">
+		<ownedMember xmi:type="uml:Package" xmi:id="U00000003-7510-11d9-86f2-000476a22f44" xmi:uuid="00000003-7510-11d9-86f2-000476a22f44" name="Component View" visibility="public">
+			<ownedMember xmi:type="uml:StateMachine" xmi:id="U87426208-7d11-4f69-9b58-7f8504dfbc69" xmi:uuid="87426208-7d11-4f69-9b58-7f8504dfbc69" name="StateMachine1" visibility="public">
+				<region xmi:type="uml:Region" xmi:id="Ubd1e73a1-2efd-4e75-bd2a-be8019baf94e" xmi:uuid="bd1e73a1-2efd-4e75-bd2a-be8019baf94e" name="Region1">
+					<subvertex xmi:type="uml:Pseudostate" xmi:id="Uce6312fd-c080-4dc2-b0d8-038f7f28aa56" xmi:uuid="ce6312fd-c080-4dc2-b0d8-038f7f28aa56">
+						<outgoing xmi:idref="U855d5b39-3bca-4ae4-993f-a4625ad95a73"/>
+					</subvertex>
+					<subvertex xmi:type="uml:State" xmi:id="U9251bfd1-49d3-4126-b313-2566e99bb9b3" xmi:uuid="9251bfd1-49d3-4126-b313-2566e99bb9b3" name="State1">
+						<outgoing xmi:idref="U963c80ac-ce87-4013-98f6-010d92675589"/>
+						<outgoing xmi:idref="Uf8b75f88-2c75-46b5-b8ac-5c72f6608485"/>
+						<incoming xmi:idref="U855d5b39-3bca-4ae4-993f-a4625ad95a73"/>
+						<incoming xmi:idref="U0f0ee2cc-e7db-4b3a-93bf-8ec2e6069d69"/>
+					</subvertex>
+					<subvertex xmi:type="uml:Pseudostate" kind="choice" xmi:id="U69b933ff-ca72-4449-b59a-cd68bb8f5259" xmi:uuid="69b933ff-ca72-4449-b59a-cd68bb8f5259">
+						<outgoing xmi:idref="U86b82cd0-7df8-46c6-bfab-ff0634a75b6e"/>
+						<outgoing xmi:idref="U7b42d629-a20b-4334-b7ef-7bfa9338212f"/>
+						<outgoing xmi:idref="U0f0ee2cc-e7db-4b3a-93bf-8ec2e6069d69"/>
+						<incoming xmi:idref="U963c80ac-ce87-4013-98f6-010d92675589"/>
+						<incoming xmi:idref="Ud6ab2d45-03b4-49bc-83b6-cd972fb2bbb6"/>
+					</subvertex>
+					<subvertex xmi:type="uml:FinalState" xmi:id="Ucd74ef29-881f-48c6-8ba6-761b2fa7d023" xmi:uuid="cd74ef29-881f-48c6-8ba6-761b2fa7d023">
+						<incoming xmi:idref="U86b82cd0-7df8-46c6-bfab-ff0634a75b6e"/>
+						<incoming xmi:idref="Uf8b75f88-2c75-46b5-b8ac-5c72f6608485"/>
+						<incoming xmi:idref="U7b42d629-a20b-4334-b7ef-7bfa9338212f"/>
+					</subvertex>
+					<subvertex xmi:type="uml:State" xmi:id="U3c74193b-149a-48e6-9f04-13fec5379fe2" xmi:uuid="3c74193b-149a-48e6-9f04-13fec5379fe2" name="State2">
+						<outgoing xmi:idref="Ud6ab2d45-03b4-49bc-83b6-cd972fb2bbb6"/>
+					</subvertex>
+					<transition xmi:type="uml:Transition" xmi:id="U855d5b39-3bca-4ae4-993f-a4625ad95a73" xmi:uuid="855d5b39-3bca-4ae4-993f-a4625ad95a73" source="Uce6312fd-c080-4dc2-b0d8-038f7f28aa56" target="U9251bfd1-49d3-4126-b313-2566e99bb9b3"/>
+					<transition xmi:type="uml:Transition" xmi:id="U963c80ac-ce87-4013-98f6-010d92675589" xmi:uuid="963c80ac-ce87-4013-98f6-010d92675589" source="U9251bfd1-49d3-4126-b313-2566e99bb9b3" target="U69b933ff-ca72-4449-b59a-cd68bb8f5259"/>
+					<transition xmi:type="uml:Transition" xmi:id="U86b82cd0-7df8-46c6-bfab-ff0634a75b6e" xmi:uuid="86b82cd0-7df8-46c6-bfab-ff0634a75b6e" source="U69b933ff-ca72-4449-b59a-cd68bb8f5259" target="Ucd74ef29-881f-48c6-8ba6-761b2fa7d023">
+						<trigger xmi:type="uml:Trigger" xmi:id="U55b86098-9fd5-4620-899e-ccebc6afd5c5" xmi:uuid="55b86098-9fd5-4620-899e-ccebc6afd5c5" name="x=2"/>
+					</transition>
+					<transition xmi:type="uml:Transition" xmi:id="Uf8b75f88-2c75-46b5-b8ac-5c72f6608485" xmi:uuid="f8b75f88-2c75-46b5-b8ac-5c72f6608485" source="U9251bfd1-49d3-4126-b313-2566e99bb9b3" target="Ucd74ef29-881f-48c6-8ba6-761b2fa7d023">
+						<trigger xmi:type="uml:Trigger" xmi:id="Ubdf7dc93-a4c8-4c52-bc6b-86264e9136ea" xmi:uuid="bdf7dc93-a4c8-4c52-bc6b-86264e9136ea" name="run()"/>
+					</transition>
+					<transition xmi:type="uml:Transition" xmi:id="U7b42d629-a20b-4334-b7ef-7bfa9338212f" xmi:uuid="7b42d629-a20b-4334-b7ef-7bfa9338212f" source="U69b933ff-ca72-4449-b59a-cd68bb8f5259" target="Ucd74ef29-881f-48c6-8ba6-761b2fa7d023">
+						<trigger xmi:type="uml:Trigger" xmi:id="U489dba7e-34ba-41ed-9701-52443b8b44c0" xmi:uuid="489dba7e-34ba-41ed-9701-52443b8b44c0" name="c=3"/>
+					</transition>
+					<transition xmi:type="uml:Transition" xmi:id="Ud6ab2d45-03b4-49bc-83b6-cd972fb2bbb6" xmi:uuid="d6ab2d45-03b4-49bc-83b6-cd972fb2bbb6" source="U3c74193b-149a-48e6-9f04-13fec5379fe2" target="U69b933ff-ca72-4449-b59a-cd68bb8f5259"/>
+					<transition xmi:type="uml:Transition" xmi:id="U0f0ee2cc-e7db-4b3a-93bf-8ec2e6069d69" xmi:uuid="0f0ee2cc-e7db-4b3a-93bf-8ec2e6069d69" source="U69b933ff-ca72-4449-b59a-cd68bb8f5259" target="U9251bfd1-49d3-4126-b313-2566e99bb9b3">
+						<trigger xmi:type="uml:Trigger" xmi:id="U55283b64-42c1-402e-8d7b-0382e4583767" xmi:uuid="55283b64-42c1-402e-8d7b-0382e4583767" name="x2=234"/>
+					</transition>
+				</region>
+			</ownedMember>
+		</ownedMember>
+	</uml:Package>
+</xmi:XMI>

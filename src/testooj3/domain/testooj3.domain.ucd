@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<editmodel:ClassDiagramEditModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:editmodel="editmodel.xmi" xmlns:options="options.xmi" size="980,649" id="testooj3.domain" metadata="uml2-1.0" initialized="true" zoom="0.75" scrolledX="15" scrolledY="25" tag="1000" key="323030353034303720746573746F6F6A3345636C697073652F41646D696E6973747261646F72">
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.1/@sourceConnections.0 //@children.2/@sourceConnections.0" name="TestMethod" location="717,97" size="116,85" id="testooj3.domain/TestMethod" runTimeClassModel="mUJAVA,sTATES_JUNIT,jUNIT">
+    <children xsi:type="editmodel:CompartmentEditModel" size="110,54"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="87,180">
+      <children xsi:type="editmodel:MethodEditModel" name="TestMethod" id="testooj3.domain/TestMethod#TestMethod()"/>
+      <children xsi:type="editmodel:MethodEditModel" name="toString" id="testooj3.domain/TestMethod#toString(Z)"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.13/@sourceConnections.1" name="TJUnitMethod" location="570,220" size="179,67" id="testooj3.domain/TMutJUnitMethod" runTimeClassModel="setMustFailExecution(Z),mutar(Ljava.util.Vector;Ljava.util.Vector;),copy(Ljava.lang.String;),toString(Z),getMutantes(),getMustFailExecution(),TJUnitMethod(Ltestooj3.domain.TestCase;)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="156,198">
+      <children xsi:type="editmodel:MethodEditModel" name="TJUnitMethod" id="testooj3.domain/TMutJUnitMethod#TMutJUnitMethod(Ltestooj3.domain.TestCase;)"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" autoLocated="true" id="testooj3.domain/TestMethod&lt;-testooj3.domain/TMutJUnitMethod" source="//@children.1" target="//@children.0" targetEnd="//@children.1/@sourceConnections.0/@children.1" sourceEnd="//@children.1/@sourceConnections.0/@children.0" connectionRouterKind="Manual">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="162,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="15,85"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" autoLocated="true" id="testooj3.domain/TMutJUnitMethod->testooj3.domain/TestCase" source="//@children.1" target="//@children.4" targetEnd="//@children.1/@sourceConnections.1/@children.2" label="//@children.1/@sourceConnections.1/@children.0" sourceEnd="//@children.1/@sourceConnections.1/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«access»" size="49,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="89,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="49,29"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" showMethodsParameterTypes="true" showMethodsParameterNames="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.14/@sourceConnections.1" name="TMujavaMethod" location="770,220" size="190,67" id="testooj3.domain/TMujavaMethod" runTimeClassModel="TMujavaMethod(Ltestooj3.domain.TestCase;),setMustFailExecution(Z),copy(Ljava.lang.String;),mutar(Ljava.util.Vector;Ljava.util.Vector;),toString(Z),getMutantes(),getMustFailExecution()">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="167,180">
+      <children xsi:type="editmodel:MethodEditModel" name="TMujavaMethod" id="testooj3.domain/TMujavaMethod#TMujavaMethod(Ltestooj3.domain.TestCase;)"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" autoLocated="true" id="testooj3.domain/TestMethod&lt;-testooj3.domain/TMujavaMethod" source="//@children.2" target="//@children.0" targetEnd="//@children.2/@sourceConnections.0/@children.1" sourceEnd="//@children.2/@sourceConnections.0/@children.0" connectionRouterKind="Manual">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="31,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="84,85"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" id="testooj3.domain/TMujavaMethod->testooj3.domain/TestCase" source="//@children.2" target="//@children.4" targetEnd="//@children.2/@sourceConnections.1/@children.2" label="//@children.2/@sourceConnections.1/@children.0" sourceEnd="//@children.2/@sourceConnections.1/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«access»" size="49,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="115,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="100,10"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" showMethodsParameterTypes="true" showMethodsParameterNames="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.5/@sourceConnections.1" name="TestTemplate" location="390,22" size="129,67" id="testooj3.domain/TestTemplate" runTimeClassModel="setConstructor(Ltestooj3.domain.TConstructor;),getRE(),clone(),getName(),toString(),TestTemplate(Ltestooj3.domain.TestTemplate;),TestTemplate(),getConstructor(),getMethods(),getTestCases(),setName(Ljava.lang.String;),setMethod(ILjava.lang.Object;)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="151,252">
+      <children xsi:type="editmodel:MethodEditModel" name="getTestCases" id="testooj3.domain/TestTemplate#getCompressedTestCases()"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" autoLocated="true" id="testooj3.domain/TestTemplate->testooj3.domain/TestCase" source="//@children.3" target="//@children.4" targetEnd="//@children.3/@sourceConnections.0/@children.2" label="//@children.3/@sourceConnections.0/@children.0" sourceEnd="//@children.3/@sourceConnections.0/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«import»" size="42,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="129,57" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="0,9"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.3/@sourceConnections.0 //@children.5/@sourceConnections.2 //@children.1/@sourceConnections.1 //@children.2/@sourceConnections.1" name="TestCase" location="610,70" size="100,29" id="testooj3.domain/TestCase" runTimeClassModel="mNombre,toString(),mParsMetodos,addParametro(Ljava.lang.Object;I),getMetodos(),mTS,getValoresParametros(I),getValoresParametrosConstructor(),mParsConstructor,valoresParametrosM(Ljava.util.Vector;Ljava.util.Vector;),getNombre(),addParametro(Ljava.lang.Object;),valoresParametrosM(Ljava.util.Vector;Ljava.util.Vector;[I),getConstructor(),TestCase(Ltestooj3.domain.TestTemplate;),getTestTemplate(),lanzaExcepciones(),getTipo(),setNombre(Ljava.lang.String;),cogerDefinicion()">
+    <children xsi:type="editmodel:CompartmentEditModel" size="146,72"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="196,288"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" name="TClass" location="29,22" size="341,103" id="testooj3.domain/TClass" runTimeClassModel="findMethodById(Ljava.lang.String;),resetTestValues(),TClass(Ljava.lang.String;Z),mMetodos,findMethodNumber(Ljava.lang.String;),getTestTemplates(ILjava.lang.String;),getName(),removeConstructor(I),getTestCases(I[I),getMethod(I),findTestTemplate(Ljava.lang.String;),getStates(),getExpandedRegularExpression(Ljava.lang.String;),getState(Ljava.lang.String;),getOriginalesForStates(),addObserverMethod(Ltestooj3.domain.TMethod;),getOperation(C),getOriginalesSmall(Z),getState(I),getTestTemplate(I),setClass(Ljava.lang.String;),findMethod(Ljava.lang.String;),mConstructores,findOperationNumber(Ljava.lang.String;),TClass(Ljava.lang.Class;Z),add(Ltestooj3.domain.states.State;),loadDescription(),mClase,TClass(),getConstructors(),getObserverMethods(),getOperation(Ljava.lang.String;),removeTestScript(Ljava.lang.String;),saveDescription(),getConstructor(I),getInvariants(),removeMethod(I),getMethods(),setInvariants(Ljava.lang.String;),findConstructorNumber(Ljava.lang.String;),getTestTemplates(),removeObserverMethod(Ljava.lang.String;)">
+    <children xsi:type="editmodel:CompartmentEditModel" size="136,72"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="318,828">
+      <children xsi:type="editmodel:MethodEditModel" name="getTestTemplates" id="testooj3.domain/TClass#getTestTemplates()"/>
+      <children xsi:type="editmodel:MethodEditModel" name="getTestTemplates" id="testooj3.domain/TClass#getTestTemplates(ILjava.lang.String;)"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:AssociationEditModel" autoLocated="true" id="testooj3.domain/TField@fields+testooj3.domain/TClass@tClass" source="//@children.5" target="//@children.6" targetEnd="//@children.5/@sourceConnections.0/@children.1" label="//@children.5/@sourceConnections.0/@children.2" sourceEnd="//@children.5/@sourceConnections.0/@children.0" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:AssociationEndEditModel" name="tClass" location="52,103" id="testooj3.domain/TField@fields+testooj3.domain/TClass@tClass|testooj3.domain/TClass#tClass" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" name="fields" location="41,0" id="testooj3.domain/TField@fields+testooj3.domain/TClass@tClass|testooj3.domain/TField#fields" multiplicityLabel="//@children.5/@sourceConnections.0/@children.1/@children.1" roleLabel="//@children.5/@sourceConnections.0/@children.1/@children.0" navigable="true" orderingKind="1">
+        <children xsi:type="editmodel:LabelEditModel" name=" - fields" location="87,171" size="37,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+        <children xsi:type="editmodel:LabelEditModel" name="*" location="68,171" size="5,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+      </children>
+      <children xsi:type="editmodel:WireLabelEditModel" size="1,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" autoLocated="true" id="testooj3.domain/TClass->testooj3.domain/TestTemplate" source="//@children.5" target="//@children.3" targetEnd="//@children.5/@sourceConnections.1/@children.2" label="//@children.5/@sourceConnections.1/@children.0" sourceEnd="//@children.5/@sourceConnections.1/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«instantiate»" size="62,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="341,33" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="0,33"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" id="testooj3.domain/TClass->testooj3.domain/TestCase" source="//@children.5" target="//@children.4" targetEnd="//@children.5/@sourceConnections.2/@children.2" label="//@children.5/@sourceConnections.2/@children.0" sourceEnd="//@children.5/@sourceConnections.2/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«import»" size="42,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="340,89" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="5,29"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:AssociationEditModel" autoLocated="true" id="testooj3.domain/TConstructor@constructors+testooj3.domain/TClass@tClass" source="//@children.5" target="//@children.10" targetEnd="//@children.5/@sourceConnections.3/@children.1" label="//@children.5/@sourceConnections.3/@children.2" sourceEnd="//@children.5/@sourceConnections.3/@children.0" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:AssociationEndEditModel" name="tClass" location="145,103" id="testooj3.domain/TConstructor@constructors+testooj3.domain/TClass@tClass|testooj3.domain/TClass#tClass" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" name="constructors" location="84,0" id="testooj3.domain/TConstructor@constructors+testooj3.domain/TClass@tClass|testooj3.domain/TConstructor#constructors" multiplicityLabel="//@children.5/@sourceConnections.3/@children.1/@children.1" roleLabel="//@children.5/@sourceConnections.3/@children.1/@children.0" navigable="true" orderingKind="1">
+        <children xsi:type="editmodel:LabelEditModel" name=" - constructors" location="180,288" size="73,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+        <children xsi:type="editmodel:LabelEditModel" name="*" location="161,288" size="5,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+      </children>
+      <children xsi:type="editmodel:WireLabelEditModel" size="1,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:AssociationEditModel" autoLocated="true" id="testooj3.domain/TMethod@methods+testooj3.domain/TClass@tClass" source="//@children.5" target="//@children.8" targetEnd="//@children.5/@sourceConnections.4/@children.1" label="//@children.5/@sourceConnections.4/@children.2" sourceEnd="//@children.5/@sourceConnections.4/@children.0" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:AssociationEndEditModel" name="tClass" location="302,103" id="testooj3.domain/TMethod@methods+testooj3.domain/TClass@tClass|testooj3.domain/TClass#tClass" attachSource="true" roleLabel="//@children.5/@sourceConnections.4/@children.0/@children.0">
+        <children xsi:type="editmodel:LabelEditModel" name="- tClass" location="337,131" size="38,14" fontInfo="Arial-8-0" anchorKind="FirstPart"/>
+      </children>
+      <children xsi:type="editmodel:AssociationEndEditModel" name="methods" location="38,0" id="testooj3.domain/TMethod@methods+testooj3.domain/TClass@tClass|testooj3.domain/TMethod#methods" multiplicityLabel="//@children.5/@sourceConnections.4/@children.1/@children.1" roleLabel="//@children.5/@sourceConnections.4/@children.1/@children.0" navigable="true" orderingKind="1">
+        <children xsi:type="editmodel:LabelEditModel" name="- methods" location="337,316" size="49,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+        <children xsi:type="editmodel:LabelEditModel" name="*" location="318,316" size="5,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+      </children>
+      <children xsi:type="editmodel:WireLabelEditModel" size="1,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" showMethodsParameterTypes="true" showMethodsParameterNames="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.5/@sourceConnections.0" name="TField" location="40,192" size="83,29" id="testooj3.domain/TField" runTimeClassModel="mType,TField(Ljava.lang.reflect.Field;),mName">
+    <children xsi:type="editmodel:CompartmentEditModel" size="99,36"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="59,18"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.8/@sourceConnections.0 //@children.10/@sourceConnections.0" name="TOperation" location="160,170" size="114,85" id="testooj3.domain/TOperation" runTimeClassModel="resetTestValues(),addPost(Ljava.lang.String;),setPos(I),getParametros(),removePre(),removePre(I),setUsar(Z),getId(),setLanzaExcepciones(Z),loadDescription(Ljava.lang.String;),removePost(I),getPostassertions(),removePostassertions(),getPos(),getLlamada(Ljava.lang.String;Ljava.lang.String;),getPost(),getAssertsPre(),getAssertsPost(),getUsar(),TOperation(),getParametro(I),saveDescription(Ljava.lang.String;),addPreassertion(Ljava.lang.String;),getDeclaraciones(Ljava.util.Vector;Ljava.lang.String;),removePost(),addPre(Ljava.lang.String;),crearObjeto(Ljava.util.Vector;),getPre(),removePreassertion(I),getDeclaraciones(Ljava.util.Vector;Ljava.lang.String;[IZ[Ljava.lang.String;),removePreassertions(),getLanzaExcepciones(),addPostassertion(Ljava.lang.String;),getNombre(),getPreassertions(),tieneParametrosComplejos(),removePostassertion(I)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="158,738">
+      <children xsi:type="editmodel:MethodEditModel" name="addPre" id="testooj3.domain/TOperation#addPre(Ljava.lang.String;)"/>
+      <children xsi:type="editmodel:MethodEditModel" name="addPost" id="testooj3.domain/TOperation#addPost(Ljava.lang.String;)"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:AssociationEditModel" autoLocated="true" id="testooj3.domain/TParameter@parameters+testooj3.domain/TOperation@tOperation" source="//@children.7" target="//@children.9" targetEnd="//@children.7/@sourceConnections.0/@children.1" label="//@children.7/@sourceConnections.0/@children.2" sourceEnd="//@children.7/@sourceConnections.0/@children.0" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:AssociationEndEditModel" name="tOperation" location="114,43" id="testooj3.domain/TParameter@parameters+testooj3.domain/TOperation@tOperation|testooj3.domain/TOperation#tOperation" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" name="parameters" location="0,40" id="testooj3.domain/TParameter@parameters+testooj3.domain/TOperation@tOperation|testooj3.domain/TParameter#parameters" multiplicityLabel="//@children.7/@sourceConnections.0/@children.1/@children.1" roleLabel="//@children.7/@sourceConnections.0/@children.1/@children.0" navigable="true" orderingKind="1">
+        <children xsi:type="editmodel:LabelEditModel" name=" - parameters" location="316,191" size="66,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+        <children xsi:type="editmodel:LabelEditModel" name="*" location="377,219" size="5,14" fontInfo="Arial-8-0" anchorKind="LastPart"/>
+      </children>
+      <children xsi:type="editmodel:WireLabelEditModel" size="1,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.5/@sourceConnections.4" name="TMethod" location="293,338" size="98,29" id="testooj3.domain/TMethod" runTimeClassModel="mTipo,toString(),getLlamada(Ljava.lang.String;I),hasResultPostcondition(),TMethod(Ljava.lang.reflect.Method;I),getTipo(),getLlamada(Ljava.lang.String;Ljava.lang.String;)">
+    <children xsi:type="editmodel:CompartmentEditModel" size="81,18"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="143,108"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" autoLocated="true" id="testooj3.domain/TOperation&lt;-testooj3.domain/TMethod" source="//@children.8" target="//@children.7" targetEnd="//@children.8/@sourceConnections.0/@children.1" sourceEnd="//@children.8/@sourceConnections.0/@children.0" connectionRouterKind="Manual">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="37,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="95,85"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" autoLocated="true" id="testooj3.domain/TMethod->java.lang.reflect/Method" source="//@children.8" target="//@children.11" targetEnd="//@children.8/@sourceConnections.1/@children.2" label="//@children.8/@sourceConnections.1/@children.0" sourceEnd="//@children.8/@sourceConnections.1/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«import»" size="42,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="98,7" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="0,35"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.7/@sourceConnections.0" name="TParameter" location="390,173" size="129,85" id="testooj3.domain/TParameter" runTimeClassModel="getTestValues(),TParameter(Ljava.lang.Class;),resetTestValues(),mTipo,loadTestValues(),toString(),mTestValues,getTestValue(I),addTestValue(Ltestooj3.domain.TestValue;),getValues(),addTestValues(Ljava.util.Vector;),esPrimitivo(),addTestValues([Ltestooj3.domain.TestValue;),setTipo(Ljava.lang.String;),getTipo(),removeTestValue(I)">
+    <children xsi:type="editmodel:CompartmentEditModel" size="122,36"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="116,252">
+      <children xsi:type="editmodel:MethodEditModel" name="addTestValue" id="testooj3.domain/TParameter#addTestValue(Ltestooj3.domain.TestValue;)"/>
+      <children xsi:type="editmodel:MethodEditModel" name="loadTestValues" id="testooj3.domain/TParameter#loadTestValues()"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.5/@sourceConnections.3" name="TConstructor" location="90,310" size="170,157" id="testooj3.domain/TConstructor" runTimeClassModel="TConstructor(Ljava.lang.reflect.Constructor;I),toString(),getInstanciacion(Ljava.lang.String;),getLlamada(Ljava.lang.String;),getDeclaracionDeObjeto(Ljava.lang.String;),getLlamada(Ljava.lang.String;Ljava.lang.String;)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="147,108">
+      <children xsi:type="editmodel:MethodEditModel" name="getLlamada" id="testooj3.domain/TConstructor#getLlamada(Ljava.lang.String;Ljava.lang.String;)"/>
+      <children xsi:type="editmodel:MethodEditModel" name="TConstructor" id="testooj3.domain/TConstructor#TConstructor(Ltestooj3.domain.TClass;Ljava.lang.reflect.Constructor;I)"/>
+      <children xsi:type="editmodel:MethodEditModel" name="getInstanciacion" id="testooj3.domain/TConstructor#getInstanciacion(Ljava.lang.String;)"/>
+      <children xsi:type="editmodel:MethodEditModel" name="toString" id="testooj3.domain/TConstructor#toString()"/>
+      <children xsi:type="editmodel:MethodEditModel" name="getLlamada" id="testooj3.domain/TConstructor#getLlamada(Ljava.lang.String;)"/>
+      <children xsi:type="editmodel:MethodEditModel" name="getDeclaracionDeObjeto" id="testooj3.domain/TConstructor#getDeclaracionDeObjeto(Ljava.lang.String;)"/>
+    </children>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" autoLocated="true" id="testooj3.domain/TOperation&lt;-testooj3.domain/TConstructor" source="//@children.10" target="//@children.7" targetEnd="//@children.10/@sourceConnections.0/@children.1" sourceEnd="//@children.10/@sourceConnections.0/@children.0" connectionRouterKind="Manual">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="119,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="49,85"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.8/@sourceConnections.1" name="Method" location="428,310" size="109,43" id="java.lang.reflect/Method" packageIndication="3" subTitle="{null}">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="150,288"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" packageIndication="3" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" targetConnections="//@children.13/@sourceConnections.0 //@children.14/@sourceConnections.0" name="TestFile" location="622,338" size="148,43" id="testooj3.domain.testfiles/TestFile" packageIndication="3" subTitle="{null}" runTimeClassModel="toString(),getFileName(),setSessionPath(Ljava.lang.String;I),TestFile(Ljava.lang.String;)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="106,90"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" packageIndication="3" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" name="JUnitFile" location="499,420" size="170,43" id="testooj3.domain.testfiles.junit/JUnitFile" packageIndication="3" subTitle="{null}" runTimeClassModel="JUnitFile(Ljava.lang.String;),load(Ljava.lang.String;),saveTo(Ljava.io.FileOutputStream;)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="70,72"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" autoLocated="true" id="testooj3.domain.testfiles/TestFile&lt;-testooj3.domain.testfiles.junit/JUnitFile" source="//@children.13" target="//@children.12" targetEnd="//@children.13/@sourceConnections.0/@children.1" sourceEnd="//@children.13/@sourceConnections.0/@children.0" connectionRouterKind="Manual">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="146,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="23,43"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" autoLocated="true" id="testooj3.domain.testfiles.junit/JUnitFile->testooj3.domain/TMutJUnitMethod" source="//@children.13" target="//@children.1" targetEnd="//@children.13/@sourceConnections.1/@children.2" label="//@children.13/@sourceConnections.1/@children.0" sourceEnd="//@children.13/@sourceConnections.1/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«import»" location="622,318" size="42,14" fontInfo="Arial-8-0" automaticRelocationAllowed="false" locationOnWireFromSource="28.0" distanceFromWire="-25.0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="120,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="49,67"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" packageIndication="3" showAttributeProperty="true"/>
+  </children>
+  <children xsi:type="editmodel:ClassEditModel" name="MujavaFile" location="699,420" size="185,43" id="testooj3.domain.testfiles.mujava/MujavaFile" packageIndication="3" subTitle="{null}" runTimeClassModel="load(Ljava.lang.String;),MujavaFile(Ljava.lang.String;),setMethodList(Ljava.util.Vector;)">
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <children xsi:type="editmodel:CompartmentEditModel" size="98,72"/>
+    <children xsi:type="editmodel:CompartmentEditModel"/>
+    <sourceConnections xsi:type="editmodel:GeneralizationEditModel" autoLocated="true" id="testooj3.domain.testfiles/TestFile&lt;-testooj3.domain.testfiles.mujava/MujavaFile" source="//@children.14" target="//@children.12" targetEnd="//@children.14/@sourceConnections.0/@children.1" sourceEnd="//@children.14/@sourceConnections.0/@children.0" connectionRouterKind="Manual">
+      <children xsi:type="editmodel:AssociationEndEditModel" location="35,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="112,43"/>
+    </sourceConnections>
+    <sourceConnections xsi:type="editmodel:DependencyEditModel" autoLocated="true" id="testooj3.domain.testfiles.mujava/MujavaFile->testooj3.domain/TMujavaMethod" source="//@children.14" target="//@children.2" targetEnd="//@children.14/@sourceConnections.1/@children.2" label="//@children.14/@sourceConnections.1/@children.0" sourceEnd="//@children.14/@sourceConnections.1/@children.1" connectionRouterKind="Manhattan">
+      <children xsi:type="editmodel:WireLabelEditModel" name="«import»" size="42,14" fontInfo="Arial-8-0" anchorKind="MiddlePart"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="127,0" attachSource="true"/>
+      <children xsi:type="editmodel:AssociationEndEditModel" location="56,67"/>
+    </sourceConnections>
+    <classifierPreferences xsi:type="editmodel:UMLClassDiagramClassifierPreference" showStereotype="true" attributeSorter="Natural" methodSorter="Natural" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" packageIndication="3" showAttributeProperty="true"/>
+  </children>
+  <diagramOptions xsi:type="options:ClassDiagramOptions" properties="wireOptions=1" autoName="false"/>
+  <boardSetting snapToGeometry="true" gridEnabled="true" gridSpacing="10,10" gridOrigin="0,0" rulerUnit="pixel">
+    <leftRuler/>
+    <topRuler/>
+  </boardSetting>
+  <classDiagramPreferences xsi:type="editmodel:UMLClassDiagramPreference" attributeSorter="Natural" methodSorter="Natural" showClassStereotype="true" showPackageStereotype="true" innerClassSorter="Natural" showPublicAttributes="true" showPackageAttributes="true" showStaticAttributes="true" showPublicMethods="true" showPackageMethods="true" showStaticMethods="true" showPublicInnerClasses="true" showPackageInnerClasses="true" showStaticInnerClasses="true" showInterfaceStereotype="true" showAttributeProperty="true"/>
+</editmodel:ClassDiagramEditModel>

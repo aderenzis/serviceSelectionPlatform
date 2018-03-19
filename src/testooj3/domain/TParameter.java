@@ -1,0 +1,542 @@
+package testooj3.domain;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import testooj3.persistence.Agente;
+import testooj3.compatibility.InterfacesCompatibilityChecker;
+
+/**
+ * @author  andres
+ */
+@SuppressWarnings("serial")
+
+
+public class TParameter implements java.io.Serializable
+{
+	public Class getmType() {
+		return mType;
+	}
+
+
+	public void setmType(Class mType) {
+		this.mType = mType;
+	}
+
+	Class mType;
+    String mTipo;
+    Vector mTestValues;
+    String mNobre;
+    List<String> mCampos; 
+	public String getMNombre() {
+		return mNobre;
+	}
+
+
+	public void setMNombre(String mName) {
+		this.mNobre = mName;
+		this.mCampos =  new ArrayList<String>();
+	}
+
+	private int numberOfRandomTestValues;
+	private boolean useValuesAsDescribed;
+	
+		
+	
+    public TParameter(Class tipo) {
+        mTipo=tipo.getName();
+        mType=tipo;
+        mTestValues=new Vector();
+		this.mCampos =  new ArrayList<String>();
+    }
+    
+    
+    public TParameter(Class tipo, String parValue){
+    	mTipo = tipo.getName();
+    	mTestValues = new Vector();
+    	mType=tipo;
+    	mTestValues.add(parValue);
+		this.mCampos =  new ArrayList<String>();
+    }
+    
+    public TParameter(Class tipo, String parValue, String name){
+    	mTipo=tipo.getName();
+    	mType=tipo;
+    	mNobre=name;    	
+    	if(parValue.isEmpty())
+            mTestValues=new Vector();
+    	else
+        	mTestValues.add(parValue);
+    	this.mCampos =  new ArrayList<String>();
+    }
+    
+    public List<String> getMCampos()
+    {
+    	return mCampos;
+    }
+    public boolean equals(Object o) {
+    	if (!(o instanceof TParameter)) return false;
+    	TParameter auxi=(TParameter) o;
+    	//return (auxi.mTipo.equals(this.mTipo));
+    	if (auxi.mTipo.equals(this.mTipo) && auxi.mTestValues.equals(this.mTestValues))
+    		return true;
+    	else return false;
+    }
+    
+    public void setTipo(String tipo) {
+        if (tipo.startsWith ("[F")){
+            tipo=tipo.concat ("Float;");
+        }else if (tipo.startsWith ("[D")){
+            tipo=tipo.concat ("Double;");
+        }else if (tipo.startsWith ("[I")){
+            tipo=tipo.concat ("Integer;");
+        }else if (tipo.startsWith ("[C")){
+            tipo=tipo.concat ("Character;");
+        }else if (tipo.startsWith ("[J")){
+            tipo=tipo.concat ("Long;");
+        }else if (tipo.startsWith ("[S")){
+            tipo=tipo.concat ("Short;");
+        }else if (tipo.startsWith ("[B")){
+            tipo=tipo.concat ("Byte;");
+        }else if (tipo.equalsIgnoreCase ("[Ljava.lang.string;")){
+            tipo=tipo.concat ("String;");
+        }
+        this.mTipo=tipo;
+    }
+    
+  //compara dos objetos de una clase cualquiera, comparando el valor de sus atributos
+	public boolean comparar(TParameter o2, String classPathOriginal,
+			String classPathCandidate) {
+//      if (!o1.getClass ().getName ().equals (o2.getClass ().getName ()))
+//      return false;
+	
+	Class claseActual;
+	Class claseNueva;
+	boolean esSubstring;    	
+	String tipo1;
+	String tipo2;
+	
+	// Acá habria que poner la parte donde se prepara el classpath 
+	// en forma de url, para poder cargar las clases verdaderas de los TParameter
+	// que estan siendo comparados. Por ahora anda PORQUE AGREGUÉ EL PROYECTO AL CLASSPATH!
+	
+  boolean iguales=true;
+  
+  try{
+	  
+	  
+	    URL[] urls= TestoojClassLoader.prepareURLs(classPathOriginal);
+	    URL[] urls2= TestoojClassLoader.prepareURLs(classPathCandidate);
+		URLClassLoader loader=new URLClassLoader(urls);
+		URLClassLoader loader2=new URLClassLoader(urls2);		
+					
+		claseActual = Class.forName(this.getTipo(),false,loader);
+        claseNueva  = Class.forName(o2.getTipo(),false,loader2);	  		
+  		  		
+    
+//  		System.out.println(claseActual.getName());
+//  		System.out.println(claseActual.getFields().toString());
+  		
+  		
+  
+  	Field[] f1=claseActual.getFields();                               
+  	Field[] f2=claseNueva.getFields();
+  	
+  	if (!(f1.length == f2.length)) return false;
+  	
+  	boolean[] result = new boolean[f1.length];   // array de 12 boolean
+  	
+  	for (int j=0; j<f2.length; j++){result[j] = false;}        	
+  
+  	for (int i=0;  i<f1.length;i ++){
+  	
+//  		System.out.println("Posicion: " + i);            
+//  		System.out.println("Clase 1 getType: "  + f1[i].getType().toString());
+//  		System.out.println("Nombre Uno: " + f1[i].getName());
+//  		if (i<f2.length) {
+//  			System.out.println("Clase 2 getType: "  + f2[i].getType().toString());
+//  			System.out.println("Nombre Dos: " + f2[i].getName());
+//  		}            
+      
+  		tipo1 = f1[i].getType().toString();
+  		tipo2 = f2[i].getType().toString();            		
+  		
+  		if (tipo1.contains(".")) tipo1 = tipo1.substring(tipo1.lastIndexOf(".") + 1);
+  		if (tipo2.contains(".")) tipo2 = tipo2.substring(tipo2.lastIndexOf(".") + 1);
+  		
+//  		System.out.println("Tipo1: " + tipo1);
+//  		System.out.println("Tipo2: " + tipo2);
+      
+  		result[i] = tipo1.equals(tipo2) || isSubTyping(tipo1,tipo2);                        
+      
+//  		System.out.println("-----------------------------------");
+  	}                
+  
+  	for (int i=0;iguales && i<f1.length;i ++){
+  		
+//  		System.out.println("result[" + i + "]: " + result[i]);        	
+  		if (result[i] == false) return false;
+  		
+  	}
+  	return true;        
+  
+  }  
+  catch( Exception e){
+  	e.printStackTrace();
+  	return false;
+  }           
+}
+    
+    public String getTipo() {
+        if (mTipo.endsWith (";")){
+            if (mTipo.equalsIgnoreCase ("float")){
+            }else if (mTipo.equalsIgnoreCase ("double")){
+            }else if (mTipo.equalsIgnoreCase ("Integer")){
+            }else if (mTipo.equalsIgnoreCase ("Character")){
+            }else if (mTipo.equalsIgnoreCase ("long")){
+            }else if (mTipo.equalsIgnoreCase ("short")){
+            }else if (mTipo.equalsIgnoreCase ("byte")){
+            } else {
+			}
+        } else {
+		}
+        
+        return mTipo;
+    }
+    
+    protected void loadRandomValues() {
+    	TestValue[] values=Agente.getAgente().getRandomValues(this.getTipo(), this.getNumberOfRandomTestValues());
+    	this.resetTestValues();
+    	for (int i=0; i<values.length; i++)
+    		this.addTestValue(values[i]);
+    }
+    
+    public TestValue[] getValues() throws Exception {
+        TestValue[] values=null;
+        if (Agente.getAgente().esPrimitivo(mTipo)) 
+        {
+            try {
+				values=Agente.getAgente().cogerValor(this.getTipo());
+			} catch (FileNotFoundException e) {
+				String msg="If you do not set values for the parameters, you need the following " +
+					"file: " + Configuration.getInstance().getValuesFile() + ". Contents of this file are " +
+					"as follows:\nint = -1, 3, 4\nshort = -1, 3, 5\n...and other types and values.";
+				throw new Exception(msg);
+			} catch (IOException e) {
+				String msg="There has been an error opening the file " + 
+				Configuration.getInstance().getValuesFile() + ". Contents of this file are " +
+					"as follows:\nint = -1, 3, 4\nshort = -1, 3, 5\n...and other types and values.";
+				throw new Exception(msg);
+			}	
+            if (values==null || values.length==0) {
+            	String msg="If you do not set values for the parameters, you need the following " +
+				"file: " + Configuration.getInstance().getValuesFile() + ". Contents of this file are " +
+				"as follows:\nint = -1, 3, 4\nshort = -1, 3, 5\n...and other types and values.";
+            	throw new Exception(msg);
+            }
+        } else if (Agente.getAgente().isArrayOfPrimitives(mTipo)) {
+        	try {
+				values=Agente.getAgente().cogerValor(this.getTipo());
+			} catch (FileNotFoundException e) {
+				String msg="If you do not set values for the parameters, you need the following " +
+				"file: " + Configuration.getInstance().getValuesFile() + ". Contents of this file are " +
+				"as follows:\nint = -1, 3, 4\nshort = -1, 3, 5\n...and other types and values.";
+			throw new Exception(msg);
+		} catch (IOException e) {
+			String msg="There has been an error opening the file " + 
+			Configuration.getInstance().getValuesFile() + ". Contents of this file are " +
+				"as follows:\nint = -1, 3, 4\nshort = -1, 3, 5\n...and other types and values.";
+			throw new Exception(msg);
+		}	
+        } else {
+            values=Agente.getAgente ().cogerFicheros (this.getTipo());
+            if (values.length==0 || values[0]==null) {
+            	String msg="In order to use parameters of non-primitive data types, you must proceed in one of these two ways:\n" +
+            	"\t1) Create objects of that type, serialize them and put save them at " + Configuration.getInstance().getSerializedObjectsPath() +
+            	"\t2) Assign as test values expressions that put the parameter in the desired state, and mark the checkbox \"Use values as described\"";
+            	throw new Exception(msg);
+            }
+        }
+        return values;
+    }
+    
+    public String toString() 
+    {
+        return mTipo;
+    }	
+    
+    public void removeTestValue(int pos) 
+    {
+        this.mTestValues.remove(pos);
+    }
+    
+    public void addTestValue(TestValue value) 
+    {
+        this.mTestValues.add(value);
+    }
+    
+    public void addTestValues(Vector values) 
+    {
+        for (int i=0; i<values.size(); i++) 
+        {
+            mTestValues.add(values.elementAt(i));
+        }
+    }
+    
+    public void addTestValues(TestValue[] values) 
+    {
+        for (int i=0; i<values.length; i++) 
+        {
+            mTestValues.add(values[i]);
+        }
+    }  
+    
+    public TestValue getTestValue(int pos) 
+    {
+        TestValue r=(TestValue) this.mTestValues.elementAt(pos);
+        return r;
+    }
+    
+    public TestValue[] getTestValues() 
+    {
+        TestValue[] result=new TestValue[mTestValues.size()];
+        for (int i=0; i<result.length; i++)
+            result[i]=(TestValue) mTestValues.elementAt(i);
+        return result;
+    }
+    
+    public void loadTestValues() throws Exception
+    {
+    	if (Configuration.getInstance().isRandomTesting()) {
+    	  	this.loadRandomValues();
+    	  	return;
+    	}
+        if (this.mTestValues.size()>0) return;
+        TestValue[] values=getValues();
+        for (int i=0; i<values.length; i++)
+            this.mTestValues.add(values[i]);
+    }
+    
+    public void resetTestValues() 
+    {
+        this.mTestValues.removeAllElements();
+    }
+    
+    public boolean isNumeric() {
+        return (mTipo.equalsIgnoreCase ("int") ||
+                mTipo.equalsIgnoreCase ("float") ||
+                mTipo.equalsIgnoreCase ("double") ||
+                mTipo.equalsIgnoreCase ("Integer") ||
+                mTipo.equalsIgnoreCase ("long") ||
+                mTipo.equalsIgnoreCase ("short") ||
+                mTipo.equalsIgnoreCase ("byte"));
+    }
+
+    public void setTestValue(int k, TestValue tv) {
+        this.mTestValues.setElementAt(tv, k);
+    }
+
+    /**
+     * @return
+     */
+    public TParameter copy() {
+        TParameter result=new TParameter();
+        result.mTipo=this.mTipo;
+        for (int i=0; i<this.getTestValues().length; i++) {
+            TestValue tv=this.getTestValue(i);
+            result.addTestValue(tv.copy());
+        }
+        result.useValuesAsDescribed(this.useValuesAsDescribed());
+        return result;
+    }
+    
+    protected TParameter() {
+        this.mTestValues=new Vector();
+    }
+
+	public void setNumberOfRandomTestValues(int valor) {
+		this.numberOfRandomTestValues=valor;
+	}
+
+	public int getNumberOfRandomTestValues() {
+		return numberOfRandomTestValues;
+	}
+
+	public boolean useValuesAsDescribed() {
+		return this.useValuesAsDescribed;
+	}
+
+	public void useValuesAsDescribed(boolean b) {
+		this.useValuesAsDescribed=b;
+	}
+	
+	
+	public Object getTestValue(){
+		return mTestValues.elementAt(0);
+	}
+	
+	private boolean isSubstringEqName(String c1MethName, String c2MethName) {
+		Vector name1Vector = getSubstringsVector(c1MethName);
+		Vector name2Vector = getSubstringsVector(c2MethName);
+		boolean found = false;
+		int i = 0;
+		while (!found && i<name2Vector.size()) {
+			if (name1Vector.contains(name2Vector.get(i)))  
+					found = true;
+			i += 1;
+		}
+		return found;
+	}	
+
+	private Vector getSubstringsVector(String palabra) {
+		Vector palabras = new Vector();
+		String subPalabra="";
+		for(int i=0; i< palabra.length();i++){
+			subPalabra=subPalabra + Character.toLowerCase(palabra.charAt(i));
+			if ((i+1)<palabra.length() && Character.isUpperCase(palabra.charAt(i+1))){
+				palabras.add(subPalabra);
+				subPalabra="";
+			}
+		}
+		palabras.add(subPalabra);
+		return palabras;
+	}
+	
+	//CLASES ENVOLVENTES - en orden de menor a mayor capacidad.
+	
+	// byte --> Byte
+	// short --> Short
+	// char --> Character
+	// int --> Integer
+	// long --> Long
+	// float --> Float
+	// double --> Double
+	// ¿BOOLEAN?
+
+    
+	// Se incluyeron todas las conversiones sin pérdida de precision, según nueva def. R2 
+	// y la compatibilidad de String con cualquier tipo.
+	// M.G. 14/09/2010  Agregados arrays de tipos simples EN PARAMETROS.
+	//	Significado:
+	//	[B --> array de byte
+	//	[S --> array de short
+	//	[I --> array de int
+	//	[J --> array de long, prestar atencion! es J y no L como uno supondría!
+	//	[F --> array de float
+	//	[D --> array de double
+	
+	private boolean isSubTyping(String type1, String type2) {
+		boolean res = false;	
+		String lstByte   = "byte,Byte,short,Short,int,Integer,long,Long,float,Float,double,Double,String";		
+		String lstShort  = "short,Short,int,Integer,long,Long,float,Float,double,Double,String";		
+		String lstInt    = "int,Integer,long,Long,float,Float,double,Double,String";		
+		String lstLong   = "long,Long,float,Float,double,Double,String";				
+		String lstFloat  = "float,Float,double,Double,String";		
+		String lstChar	 = "char,Character,String";				
+		String lstDouble = "double,Double,String";
+				
+		String lstarrayByte   = "[B,[S,[I,[J,[F,[D";
+		String lstarrayShort  = "[S,[I,[J,[F,[D";
+		String lstarrayInt    = "[I,[J,[F,[D";
+		String lstarrayLong   = "[J,[F,[D";
+		String lstarrayFloat  = "[F,[D";
+		String lstarrayDouble = "[D";
+		String lstarrayChar	  = "[C";
+		
+		// Si el tipo esperado es String, aceptamos cualquier cosa
+		if (type1 == "java.lang.String") {						
+			res = true;
+			return res;
+		}				
+		//Análisis de tipos primitivos
+		if ((type1 == "char") || (type1 == "Character")) 
+			if (lstChar.indexOf(type2) != -1){				
+		    	res = true;
+		    	return res;
+			}
+		if ((type1 == "byte") || (type1 == "Byte"))
+		    if (lstByte.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }	
+		if ((type1 == "short") || (type1 == "Short"))			
+			if (lstShort.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+			}			
+		if ((type1 == "int") || (type1 == "Integer")) 
+		    if (lstInt.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }	
+		if ((type1 == "long") || (type1 == "Long"))						
+		    if (lstLong.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;		    		
+		    }    
+		if ((type1 == "float") ||  (type1 == "Float"))
+		    if (lstFloat.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }			
+		if ((type1 == "double") ||  (type1 == "Double"))
+		    if (lstDouble.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }
+		
+//		// Analisis de ARRAYS de tipos primitivos!		
+		if (type1 == "[C") 
+			if (lstarrayChar.indexOf(type2) != -1){							
+		    	res = true;
+		    	return res;
+			}
+		if (type1 == "[B")
+		    if (lstarrayByte.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }	
+		if (type1 == "[S")			
+			if (lstarrayShort.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+			}			
+		if (type1 == "[I") 
+		    if (lstarrayInt.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }	
+		if (type1 == "[J") 
+		    if (lstarrayLong.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }			
+		if (type1 == "[F")
+		    if (lstarrayFloat.indexOf(type2) != -1){		    	
+		    	res = true;
+		    	return res;
+		    }			
+		if (type1 == "[D")
+		    if (lstarrayDouble.indexOf(type2) != -1){
+		    	res = true;
+		    	return res;
+		    }
+		return res;  
+	}
+
+
+	public void addCampos(Field[] fields) {
+	
+		for(Field field: fields)
+			mCampos.add(field.getName());
+	}
+
+
+
+
+}

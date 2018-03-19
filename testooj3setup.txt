@@ -1,0 +1,10 @@
+#testooj3 setup
+#Thu Mar 03 17:26:23 ART 2016
+MuJavaRoot=C\:/Users/lenovo1/Dropbox/workspace de notebooks/testOoj/lib/mujava/
+JUnitLocation=C\:/Users/lenovo1/Dropbox/workspace de notebooks/testOoj/lib/junit.jar
+SplitJUnitFilesEvery=600000
+WorkingPath=C\:/Users/lenovo1/Dropbox/workspace de notebooks/testOoj/results/
+SplitMuJavaFilesEvery=200000
+WsdlsPath=
+ClassPath=
+AdditionalTestFilesPaths=
